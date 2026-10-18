@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Quanto — la fisica, un argomento alla volta</title>
+  <meta name="description" content="Spiegazioni con i video, esempi, flashcard, esercizi con le unità di misura e quiz di fisica per il liceo, con Stilla la goccia che racconta i fisici.">
+  <meta name="theme-color" content="#f1f5f3">
+  <link rel="icon" href="quanto-icona.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..800,0..100;1,9..144,300..800,0..100&family=Lexend:wght@300..700&display=swap">
+  <link rel="stylesheet" href="lib/katex/katex.min.css?v=1">
+  <link rel="stylesheet" href="quanto.css?v=1">
+</head>
+<body>
+  <header class="testata">
+    <div class="testata-int">
+      <a class="logo" href="#/" aria-label="Quanto, home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 C19.5 9 25 14 25 19.5 A9 9 0 0 1 7 19.5 C7 14 12.5 9 16 3.5 Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M9.6 21 q3.2 -2.6 6.4 0 t6.4 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span>Quanto</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="#/" data-pagina="home">Argomenti</a>
+        <a href="#/ripasso" data-pagina="ripasso">Ripasso<span class="conteggio" id="nav-ripasso" hidden>0</span></a>
+        <a href="#/fisici" data-pagina="fisici">Fisici</a>
+      </nav>
+      <button class="icona-btn" id="btn-lettura" type="button" aria-label="Lettura facilitata: testo più grande e più spaziato" title="Lettura facilitata" aria-pressed="false"><span class="aa">Aa</span></button>
+      <button class="icona-btn" id="btn-tema" type="button" aria-label="Cambia tema chiaro/scuro" title="Tema chiaro/scuro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path class="ic-luna" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="icona-btn" href="#/impostazioni" aria-label="Impostazioni" title="Impostazioni">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="app" aria-live="polite"></main>
+
+  <script src="lib/katex/katex.min.js?v=1"></script>
+  <script src="lib/katex/auto-render.min.js?v=1"></script>
+  <script src="quanto-grafici.js?v=1"></script>
+  <script src="quanto-animazioni.js?v=1"></script>
+  <script src="quanto-video.js?v=1"></script>
+  <script src="quanto-mascotte.js?v=1"></script>
+  <script src="quanto-indice.js?v=1"></script>
+  <script src="quanto.js?v=1"></script>
+</body>
+</html>

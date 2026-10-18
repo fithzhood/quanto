@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="q-fondo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d8fa1"/><stop offset="1" stop-color="#0a5f7a"/></linearGradient>
+    <linearGradient id="q-goccia" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d4f3f7"/></linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#q-fondo)"/>
+  <path d="M32 9 C38 18 47 26 47 36 A15 15 0 0 1 17 36 C17 26 26 18 32 9 Z" fill="url(#q-goccia)"/>
+  <path d="M21 39 q5.5 -4.5 11 0 t11 0" fill="none" stroke="#0b7f91" stroke-width="3.4" stroke-linecap="round"/>
+  <ellipse cx="25.5" cy="28" rx="2.4" ry="4.6" fill="#ffffff" opacity=".9" transform="rotate(25 25.5 28)"/>
+</svg>
