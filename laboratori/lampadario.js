@@ -13,14 +13,17 @@
     .lab-lampadario .lab-scena { background: linear-gradient(180deg, var(--sup2), var(--sup)); overflow: hidden; touch-action: none; cursor: grab; }
     .lab-lampadario .lab-scena > svg { width: 100%; height: 100%; }
     .lab-lampadario svg text { font-family: var(--font); }
-    .lab-lampadario .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); }
+    .lab-lampadario svg text, .lab-lampadario svg tspan { font-variant-numeric: tabular-nums !important; }   /* le cifre nella scena non ballano mentre un numero scorre (lo stile «font:» in linea le rimetterebbe proporzionali) */
+    .lab-lampadario .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); height: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; display: flex; align-items: center; justify-content: center; }
+    .lab-lampadario .consegna > span { display: block; }
     .lab-lampadario .consegna b { color: var(--accento-testo); font-weight: 600; }
     .lab-lampadario .consegna:empty { display: none; }
-    .lab-lampadario .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px .5em; font-size: clamp(1rem, 2.4cqmin, 1.15rem); line-height: 1.2; min-height: 2.4em; }
+    .lab-lampadario .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 2px .5em; font-size: clamp(1rem, 2.4cqmin, 1.15rem); line-height: 1.2; height: calc(4.4 * clamp(1rem, 2.4cqmin, 1.15rem)); flex: none; }
     .lab-lampadario .formula .pezzo { display: inline-block; white-space: nowrap; }
     .lab-lampadario .formula .ignoto { color: var(--testo3); }
     .lab-lampadario .formula .esito { color: var(--s2); font-weight: 600; }
-    .lab-lampadario .lab-messaggio { padding: 0 4px; min-height: 1.45em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    .lab-lampadario .lab-messaggio { padding: 0 4px; height: calc(2.9 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    @container lab (min-aspect-ratio: 5 / 4) and (min-height: 560px) { .lab-lampadario .formula { height: calc(6.4 * clamp(1rem, 2.4cqmin, 1.15rem)); } .lab-lampadario .lab-messaggio { height: calc(4.35 * clamp(.9rem, 2.1cqmin, 1.05rem)); } }   /* nel pannello di lato c'è posto: la formula intera (anche la forma simbolica) e il messaggio su tre righe */
     .lab-lampadario .lab-barra { padding: 0; border: 0; gap: 8px; justify-content: center; }
     .lab-lampadario .lab-barra .btn { min-height: clamp(40px, 6cqh, 50px); }
     .lab-lampadario .btn[disabled] { opacity: .38; cursor: default; }
@@ -31,8 +34,10 @@
     .lab-lampadario .lab-param .largo { display: none; }
     @container lab (max-aspect-ratio: 5 / 4) and (min-width: 600px) { .lab-lampadario .lab-param .largo { display: inline; } }
     .lab-lampadario .lab-param .nome { min-width: 1.6em; white-space: nowrap; }
-    .lab-lampadario .lab-param output { min-width: 2.5em; white-space: nowrap; }
-    @container lab (max-width: 460px) { .lab-lampadario .lab-param { gap: 2px; } .lab-lampadario .lab-param .btn { min-width: 36px; padding: 0 4px; } .lab-lampadario .lab-parametri { gap: 6px 4px; } .lab-lampadario .lab-barra { gap: 6px; } .lab-lampadario .lab-barra .btn { padding-left: 12px; padding-right: 12px; } }
+    .lab-lampadario .lab-param output { min-width: 0; width: 4.9ch; flex: none; white-space: nowrap; }
+    .lab-lampadario .lab-param[data-p="D"] output { width: 4.7ch; }
+    .lab-lampadario .lab-param[data-p="a"] output, .lab-lampadario .lab-param[data-p="a1"] output, .lab-lampadario .lab-param[data-p="a2"] output { width: 3.2ch; }
+    @container lab (max-width: 460px) { .lab-lampadario .lab-param { gap: 2px; } .lab-lampadario .lab-param .btn { min-width: 34px; padding: 0 4px; } .lab-lampadario .lab-parametri { gap: 6px 4px; } .lab-lampadario .lab-barra { gap: 6px; } .lab-lampadario .lab-barra .btn { padding-left: 12px; padding-right: 12px; } }
     .lab-lampadario .lab-param.fisso .btn { visibility: hidden; }
     .lab-lampadario .lab-param.fisso output { color: var(--testo2); }
     .lab-lampadario .conta { position: absolute; left: 8px; top: 6px; padding: 1px 6px; border-radius: 6px; background: var(--sup); margin: 0; font-size: .8rem; white-space: nowrap; pointer-events: none; }
@@ -41,7 +46,22 @@
     @keyframes lab-lampadario-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
     .lab-lampadario .formula .simbolo { }
     @container lab (max-width: 420px) { .lab-lampadario .formula .simbolo { display: none; } }
+    /* il pannello ha la stessa altezza in ogni livello e nel Libero: righe dei parametri a passo fisso, e consegna + parametri
+       riservano lo spazio del caso più alto (1 riga di parametri sotto la consegna nei livelli, 3 nel Libero, dove la consegna non c'è) */
+    .lab-lampadario .lab-lato { --riga: max(38px, 2rem); --cons: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); --pl: calc(1 * var(--riga) + 0 * 6px); --pf: calc(3 * var(--riga) + 2 * 6px); --blocco: max(calc(var(--cons) + 6px + var(--pl)), var(--pf)); }
+    .lab-lampadario .lab-lato .lab-parametri { row-gap: 6px; grid-auto-rows: minmax(var(--riga), auto); align-content: center; min-height: calc(var(--blocco) - var(--cons) - 6px); }
+    .lab-lampadario .lab-lato .consegna:empty { display: none; }
+    .lab-lampadario .lab-lato .consegna:empty + .lab-parametri { min-height: var(--blocco); }
+    .lab-lampadario .lab-barra { min-height: max(clamp(40px, 6cqh, 50px), 2.45rem); }
   `;
+
+  /* un testo che cambia sta nello spazio riservato: se non ci sta, si rimpicciolisce invece di spingere il resto */
+  function stringi(el) {
+    el.style.fontSize = '';
+    if (!el.clientHeight) return;
+    let f = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while ((el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) && n++ < 14) { f *= 0.93; el.style.fontSize = f + 'px'; }
+  }
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
   const G = 9.8, RAD = Math.PI / 180;
@@ -492,7 +512,7 @@
         if (L.a) { s.a1 = L.a[0]; s.a2 = L.a[1]; }
         fase = 'tenuto'; tentativi = 0; finito = false; esito = null; caduta = null; detti = {}; prec = null;
         aiutoEl.hidden = true;
-        consegnaEl.innerHTML = L.consegna;
+        consegnaEl.innerHTML = '<span>' + L.consegna + '</span>';
         msg.textContent = ''; msg.className = 'lab-messaggio';
         b.ric.textContent = 'Ricomincia';
         ridisegnaTutto(); aggiorna(); aggiornaLivelli(); aggiornaConta();
@@ -758,7 +778,12 @@
 
       avviaLivello(livello);
       let forma = '';
+      /* formula, consegna e messaggio hanno un'altezza fissa: se un testo non ci sta, si rimpicciolisce */
+      const fissi = [formulaEl, consegnaEl, msg].filter(Boolean);
+      const mo = new MutationObserver(() => fissi.forEach(stringi));
+      fissi.forEach(el => mo.observe(el, { childList: true, characterData: true, subtree: true }));
       const ro = new ResizeObserver(() => {
+        fissi.forEach(stringi);
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();
@@ -766,7 +791,7 @@
       ro.observe(svg);
 
       return function smonta() {
-        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect();
+        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect(); mo.disconnect();
         window.removeEventListener('pointermove', muovi);
         window.removeEventListener('pointerup', molla);
         window.removeEventListener('pointercancel', molla);

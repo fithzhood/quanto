@@ -9,22 +9,27 @@
     .lab-cannone .lab-scena { background: linear-gradient(180deg, var(--sup2), var(--sup)); overflow: hidden; touch-action: none; cursor: crosshair; }
     .lab-cannone .lab-scena > svg { width: 100%; height: 100%; }
     .lab-cannone svg text { font-family: var(--font); }
-    .lab-cannone .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); }
+    .lab-cannone svg text, .lab-cannone svg tspan { font-variant-numeric: tabular-nums !important; }   /* le cifre nella scena non ballano mentre un numero scorre (lo stile «font:» in linea le rimetterebbe proporzionali) */
+    .lab-cannone .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); height: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; display: flex; align-items: center; justify-content: center; }
+    .lab-cannone .consegna > span { display: block; }
     .lab-cannone .consegna b { color: var(--accento-testo); font-weight: 600; }
-    .lab-cannone .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px .4em; font-size: clamp(1rem, 2.5cqmin, 1.2rem); line-height: 1.2; min-height: 2.4em; }
+    .lab-cannone .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 2px .4em; font-size: clamp(1rem, 2.5cqmin, 1.2rem); line-height: 1.2; height: calc(4.2 * clamp(1rem, 2.5cqmin, 1.2rem)); flex: none; }
     .lab-cannone .formula .pezzo { display: inline-block; white-space: nowrap; }
     .lab-cannone .formula .ignoto { color: var(--testo3); }
     .lab-cannone .formula .esito { color: var(--s3); font-weight: 600; }
-    .lab-cannone .lab-messaggio { padding: 0 4px; min-height: 1.45em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    .lab-cannone .lab-messaggio { padding: 0 4px; height: calc(2.9 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; display: flex; align-items: center; justify-content: center; }
+    @container lab (min-aspect-ratio: 5 / 4) and (min-height: 560px) { .lab-cannone .formula { height: calc(6.2 * clamp(1rem, 2.5cqmin, 1.2rem)); } .lab-cannone .lab-messaggio { height: calc(4.35 * clamp(.9rem, 2.1cqmin, 1.05rem)); } }   /* nel pannello di lato c'è posto: la formula intera (anche la forma simbolica) e il messaggio su tre righe */
     .lab-cannone .lab-barra { padding: 0; border: 0; gap: 8px; justify-content: center; }
     .lab-cannone .lab-barra .btn { min-height: clamp(40px, 6cqh, 50px); }
     .lab-cannone .btn[disabled] { opacity: .38; cursor: default; }
     .lab-cannone .lab-parametri { max-width: 520px; }
     .lab-cannone .lab-parametri .b-casuale { justify-self: center; }   /* in modalità libera sta accanto ad h, nel posto vuoto */
     .lab-cannone .lab-parametri .b-casuale[hidden] { display: none; }
-    .lab-cannone .consegna:empty { display: none; }
     .lab-cannone .lab-param .nome { min-width: 1.6em; }
-    .lab-cannone .lab-param output { min-width: 2.7em; }
+    .lab-cannone .lab-param output { min-width: 0; width: 3.2ch; flex: none; white-space: nowrap; }
+    .lab-cannone .lab-param[data-p="v"] output { width: 6.9ch; }
+    .lab-cannone .lab-param[data-p="h"] output { width: 4.2ch; }
+    @container lab (max-width: 520px) { .lab-cannone .lab-parametri { grid-template-columns: auto auto; justify-content: space-evenly; column-gap: 6px; } .lab-cannone .lab-param { gap: 2px; } .lab-cannone .lab-param .nome { min-width: 0; } }
     .lab-cannone .lab-param .unita { font-size: .8rem; color: var(--testo2); min-width: 2.2em; }
     .lab-cannone .lab-param.fisso .btn { visibility: hidden; }
     .lab-cannone .lab-param.fisso output { color: var(--testo2); }
@@ -35,6 +40,13 @@
     /* sul telefono la forma simbolica della formula cede il posto a quella con i numeri */
     .lab-cannone .formula .nome-stretto { display: none; }
     @container lab (max-width: 420px) { .lab-cannone .formula .simbolo { display: none; } .lab-cannone .formula .nome-stretto { display: inline; } }
+    /* il pannello ha la stessa altezza in ogni livello e nel Libero: righe dei parametri a passo fisso, e consegna + parametri
+       riservano lo spazio del caso più alto (1 riga di parametri sotto la consegna nei livelli, 2 nel Libero, dove la consegna non c'è) */
+    .lab-cannone .lab-lato { --riga: max(38px, 2rem); --cons: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); --pl: calc(1 * var(--riga) + 0 * 6px); --pf: calc(2 * var(--riga) + 1 * 6px); --blocco: max(calc(var(--cons) + 6px + var(--pl)), var(--pf)); }
+    .lab-cannone .lab-lato .lab-parametri { row-gap: 6px; grid-auto-rows: minmax(var(--riga), auto); align-content: center; min-height: calc(var(--blocco) - var(--cons) - 6px); }
+    .lab-cannone .lab-lato .consegna:empty { display: none; }
+    .lab-cannone .lab-lato .consegna:empty + .lab-parametri { min-height: var(--blocco); }
+    .lab-cannone .lab-barra { min-height: max(clamp(40px, 6cqh, 50px), 2.45rem); }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
@@ -155,6 +167,13 @@
   const AIUTO_LIBERO = 'In modalità libera non c\'è niente da colpire. Scegli l\'angolo α, la velocità v₀ e la quota h da cui parte la palla, poi spara: le tracce restano, così puoi confrontare i tiri (per esempio due angoli che sommati fanno 90°). «Casuale» propone un tiro a caso, «Ricomincia» cancella le tracce.';
 
   /* ---------------- numeri ---------------- */
+  /* un testo che cambia sta nello spazio riservato: se non ci sta, si rimpicciolisce invece di spingere il resto */
+  function stringi(el) {
+    el.style.fontSize = '';
+    if (!el.clientHeight) return;
+    let f = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while ((el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) && n++ < 14) { f *= 0.93; el.style.fontSize = f + 'px'; }
+  }
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
   function texV(v) { return v % 1 ? texNum(v, 1) : String(v); }   /* 14 oppure 14{,}5 */
@@ -458,7 +477,7 @@
         p = { a: L.inizio.a, v: L.inizio.v, h: L.h || 0 };
         colpi = 0; finito = false; tracce = []; ultimo = null; presi = []; detti = {}; mancatiDopo = 0;
         vuota(gVolo); orologio.textContent = ''; aiutoEl.hidden = true;
-        consegnaEl.innerHTML = L.consegna;
+        consegnaEl.innerHTML = '<span>' + L.consegna + '</span>';
         msg.textContent = ''; msg.className = 'lab-messaggio';
         b.fuoco.disabled = false; b.ric.textContent = 'Ricomincia';
         ridisegnaTutto(); aggiorna(); aggiornaLivelli(); aggiornaConta();
@@ -696,9 +715,14 @@
         livelliEl.insertBefore(pl, b.libero);
       });
 
+      /* formula, consegna e messaggio hanno un'altezza fissa: se un testo non ci sta, si rimpicciolisce */
+      const fissi = [formulaEl, consegnaEl, msg];
+      const mo = new MutationObserver(() => fissi.forEach(stringi));
+      fissi.forEach(el => mo.observe(el, { childList: true, characterData: true, subtree: true }));
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        fissi.forEach(stringi);
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();
@@ -706,7 +730,7 @@
       ro.observe(svg);
 
       return function smonta() {
-        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect();
+        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect(); mo.disconnect();
 
         window.removeEventListener('pointermove', muovi);
         window.removeEventListener('pointerup', molla);

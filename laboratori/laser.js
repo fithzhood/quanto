@@ -41,6 +41,19 @@
     .lab-laser .conta { position: absolute; right: 10px; top: 8px; margin: 0; font-size: .8rem; white-space: nowrap; pointer-events: none; }
     .lab-laser .vinto { display: inline-block; animation: lab-laser-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-laser-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
+    /* layout fermo */
+    .lab-laser .consegna { min-height: 2.8em; }   /* righe riservate al livello con la consegna più lunga: cambiare livello non sposta il resto */
+    .lab-laser .formula { min-height: 4.6em; align-content: center; }   /* altezza fissa, quella del caso più alto: i numeri che cambiano non spingono il resto */
+    .lab-laser .lab-messaggio { min-height: 3em; }   /* due righe riservate al messaggio */
+    .lab-laser .lab-param output { text-align: center; width: 4.6ch; min-width: 4.6ch; }   /* larga quanto «−180°»: le cifre corte non spostano i pulsanti */
+    .lab-laser .lab-param output.parola { width: 6.6em; min-width: 6.6em; }   /* «semicerchio» è la parola più lunga */
+    .lab-laser .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-laser .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-laser .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-laser .lab-lato { min-height: 18.4rem; } .lab-laser .lab-barra { min-height: 2.31rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-laser .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 20.4rem) / 2)); padding-bottom: max(14px, calc((100cqh - 20.4rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ----------------
@@ -591,6 +604,16 @@
         });
       }
       /* il ponte con la teoria: la formula con i numeri scelti; il risultato dopo l'accensione (in modalità libera subito) */
+      /* il messaggio ha due righe fisse: se un testo è più lungo, si rimpicciolisce invece di spingere il resto */
+      function adattaMessaggio() {
+        msg.style.fontSize = ''; msg.style.height = ''; msg.style.minHeight = '';
+        const cs = getComputedStyle(msg), f0 = parseFloat(cs.fontSize), riga = parseFloat(cs.lineHeight) || f0 * 1.45;
+        const alto = Math.max(parseFloat(cs.minHeight) || 0, 2 * riga + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom));
+        msg.style.height = alto.toFixed(1) + 'px'; msg.style.minHeight = '0';
+        let f = f0;
+        while (msg.scrollHeight > msg.clientHeight + 1 && f > f0 * 0.7) { f *= 0.93; msg.style.fontSize = f.toFixed(2) + 'px'; }
+      }
+      new MutationObserver(adattaMessaggio).observe(msg, { childList: true, characterData: true, subtree: true });
       function aggiornaFormula(trLibero) {
         const L = liv(), tipo = L.formula;
         const fatto = libero || (ultimo && stessi(ultimo.p, p));
@@ -872,6 +895,7 @@
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaMessaggio();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

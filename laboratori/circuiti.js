@@ -43,6 +43,21 @@
     @keyframes lab-circuiti-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
     .lab-circuiti .formula .nome-stretto { display: none; }
     @container lab (max-width: 420px) { .lab-circuiti .formula .simbolo { display: none; } .lab-circuiti .formula .nome-stretto { display: inline; } }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-circuiti .consegna { min-height: 2.9em; }   /* righe riservate alla consegna più lunga */
+    .lab-circuiti .formula { height: 5.2rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-circuiti .lab-messaggio { min-height: 3em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-circuiti .consegna { min-height: 2.8em; } .lab-circuiti .formula { height: 3.4rem; } }
+    .lab-circuiti .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-circuiti .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    .lab-circuiti .chip .mis { display: inline-block; min-width: 5.4em; text-align: center; }   /* posto fisso per «ora 1,23 W» */
+    .lab-circuiti .lab-barra .b-accendi { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* «Spegni» largo quanto «⚡ Accendi» */
+    .lab-circuiti .lab-barra .b-accendi::after { content: '⚡ Accendi'; content: '⚡ Accendi' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-circuiti .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-circuiti .lab-lato { min-height: 21.1rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-circuiti .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 21.1rem) / 2)); padding-bottom: max(14px, calc((100cqh - 21.1rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ----------------
@@ -453,7 +468,7 @@
         const L = LIVELLI[livello];
         richiesteEl.innerHTML = Object.keys(L.obiettivi).map(id => {
           const t = L.obiettivi[id];
-          let cls = 'chip', mis = '';
+          let cls = 'chip', mis = ' <span class="mis"></span>';   /* la casella della misura c'è anche a circuito spento: accendere non allarga i gettoni */
           if (acceso && ris && !ris.corto) {
             const P = ris.lampade[id].P, ok = vicino(P, t);
             cls += ok ? ' ok' : ' no';
@@ -463,9 +478,16 @@
         }).join('');
       }
       /* il ponte con la teoria: P = V·I = R·I² per la lampadina toccata; i numeri solo da acceso */
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const c = lampada(sel) || st.comp.filter(x => x.tipo === 'lamp')[0];
-        if (!c) { formulaEl.innerHTML = ''; return; }
+        if (!c) { formulaEl.innerHTML = ''; adattaFormula(); return; }
         sel = c.id;
         const nome = 'P_{\\mathrm{' + c.id + '}}', R = texN(c.R, 1) + '\\,\\Omega';
         const gI = s => '\\htmlClass{gI}{' + s + '}', gV = s => '\\htmlClass{gV}{' + s + '}';
@@ -482,7 +504,7 @@
           pezzi.push(numerico(nome, '= ' + R + ' \\cdot ' + gI('I') + '^2'));
           pezzi.push('<span class="pezzo ignoto">' + ctx.tex('= \\ ?') + '</span>');
         }
-        formulaEl.innerHTML = pezzi.join('');
+        formulaEl.innerHTML = pezzi.join(''); adattaFormula();
       }
       const box = { np: q('[data-p="np"]'), E: q('[data-p="E"]'), nl: q('[data-p="nl"]'), R: q('[data-p="R"]') };
       function aggiornaParametri() {
@@ -799,6 +821,7 @@
       avviaLivello(livello);
       let forma = '', ro = null;
       const ridimensiona = () => {
+        adattaFormula();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

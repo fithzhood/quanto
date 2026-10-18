@@ -43,6 +43,19 @@
     .lab-banco-ottico.riquadro-dx .conta { right: auto; left: 10px; }
     .lab-banco-ottico .vinto { display: inline-block; animation: lab-banco-ottico-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-banco-ottico-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-banco-ottico .consegna { min-height: 4.2em; }   /* righe riservate alla consegna più lunga */
+    .lab-banco-ottico .formula { height: 7.6rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-banco-ottico .lab-messaggio { min-height: 3em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-banco-ottico .consegna { min-height: 6.1em; } .lab-banco-ottico .formula { height: 5rem; } }
+    .lab-banco-ottico .lab-param output { width: 6.2ch; min-width: 6.2ch; text-align: center; }   /* larga quanto «−100 cm»: le cifre non spostano i pulsanti */
+    .lab-banco-ottico .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-banco-ottico .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-banco-ottico .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-banco-ottico .lab-lato { min-height: 21.7rem; } .lab-banco-ottico .lab-barra { min-height: 2.31rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-banco-ottico .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 30.7rem) / 2)); padding-bottom: max(14px, calc((100cqh - 30.7rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ----------------
@@ -526,6 +539,23 @@
         L.mobili.forEach(k => box[k].classList.toggle('solo', vis === 1));
       }
       /* il ponte con la teoria: la formula con i numeri del banco; il risultato solo dopo la prova (in modalità libera subito) */
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      /* il messaggio ha due righe fisse: se un testo è più lungo, si rimpicciolisce invece di spingere il resto */
+      function adattaMessaggio() {
+        msg.style.fontSize = ''; msg.style.height = ''; msg.style.minHeight = '';
+        const cs = getComputedStyle(msg), f0 = parseFloat(cs.fontSize), riga = parseFloat(cs.lineHeight) || f0 * 1.45;
+        const alto = Math.max(parseFloat(cs.minHeight) || 0, 2 * riga + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom));
+        msg.style.height = alto.toFixed(1) + 'px'; msg.style.minHeight = '0';
+        let f = f0;
+        while (msg.scrollHeight > msg.clientHeight + 1 && f > f0 * 0.7) { f *= 0.93; msg.style.fontSize = f.toFixed(2) + 'px'; }
+      }
+      new MutationObserver(adattaMessaggio).observe(msg, { childList: true, characterData: true, subtree: true });
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const L = liv(), pz = [];
         const fr = n => '\\dfrac{1}{' + texN(n) + '}';
@@ -558,7 +588,7 @@
           else if (provato) { const sx = 1 / pp + 1 / ss, dx = 1 / p.f; pezzo(texNum(sx, 3) + (Math.abs(sx - dx) < 5e-4 ? ' \\approx ' : ' \\neq ') + texNum(dx, 3) + '\\,\\text{cm}^{-1}', 'nota'); }
           if (L.tipo === 'G') pezzo('G = \\dfrac{q}{p} ' + (finito || provato ? '\\approx ' + texNum(Math.abs(schermo(p).m), 2) : '= \\ ?'), finito ? 'esito' : (provato ? 'nota' : 'ignoto'));
         }
-        formulaEl.innerHTML = pz.join('');
+        formulaEl.innerHTML = pz.join(''); adattaFormula();
       }
       function aggiornaLivelli() {
         const fatti = ctx.stato().livelli, sblocco = fatti.length ? Math.max.apply(null, fatti) + 1 : 0;
@@ -797,6 +827,7 @@
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaFormula(); adattaMessaggio();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

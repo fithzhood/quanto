@@ -11,16 +11,19 @@
     .lab-calorimetro .lab-scena { background: linear-gradient(180deg, var(--sup2), var(--sup)); overflow: hidden; touch-action: none; }
     .lab-calorimetro .lab-scena > svg { width: 100%; height: 100%; }
     .lab-calorimetro svg text { font-family: var(--font); }
-    .lab-calorimetro .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); }
+    .lab-calorimetro svg text, .lab-calorimetro svg tspan { font-variant-numeric: tabular-nums !important; }   /* le cifre nella scena non ballano mentre un numero scorre (lo stile «font:» in linea le rimetterebbe proporzionali) */
+    .lab-calorimetro .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); height: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; display: flex; align-items: center; justify-content: center; }
+    .lab-calorimetro .consegna > span { display: block; }
     .lab-calorimetro .consegna b { color: var(--accento-testo); font-weight: 600; }
     .lab-calorimetro .consegna:empty { display: none; }
-    .lab-calorimetro .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px .4em; font-size: clamp(1rem, 2.4cqmin, 1.15rem); line-height: 1.2; min-height: 2.4em; }
+    .lab-calorimetro .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 2px .4em; font-size: clamp(1rem, 2.4cqmin, 1.15rem); line-height: 1.2; height: calc(4.4 * clamp(1rem, 2.4cqmin, 1.15rem)); flex: none; }
     .lab-calorimetro .formula .pezzo { display: inline-block; white-space: nowrap; }
     .lab-calorimetro .formula .ignoto { color: var(--testo3); }
     .lab-calorimetro .formula .esito { color: var(--s3); font-weight: 600; }
     .lab-calorimetro .formula .nome-stretto { display: none; }
     @container lab (max-width: 420px) { .lab-calorimetro .formula .simbolo { display: none; } .lab-calorimetro .formula .nome-stretto { display: inline; } .lab-calorimetro .formula { font-size: 1rem; } }
-    .lab-calorimetro .lab-messaggio { padding: 0 4px; min-height: 1.45em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    .lab-calorimetro .lab-messaggio { padding: 0 4px; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; height: calc(2.9 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; }
+    @container lab (min-aspect-ratio: 5 / 4) and (min-height: 560px) { .lab-calorimetro .formula { height: calc(6.4 * clamp(1rem, 2.4cqmin, 1.15rem)); } .lab-calorimetro .lab-messaggio { height: calc(4.35 * clamp(.9rem, 2.1cqmin, 1.05rem)); } }   /* nel pannello di lato c'è posto: la formula intera (anche la forma simbolica) e il messaggio su tre righe */
     .lab-calorimetro .lab-barra { padding: 0; border: 0; gap: 8px; justify-content: center; }
     .lab-calorimetro .lab-barra .btn { min-height: clamp(40px, 6cqh, 50px); }
     .lab-calorimetro .btn[disabled] { opacity: .38; cursor: default; }
@@ -28,19 +31,20 @@
     .lab-calorimetro .lab-parametri.uno { max-width: 520px; }
     .lab-calorimetro .lab-param[hidden], .lab-calorimetro .b-casuale[hidden], .lab-calorimetro .risposte[hidden] { display: none; }
     .lab-calorimetro .lab-param { gap: 6px; }
-    .lab-calorimetro .lab-param .valore { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 4.4em; line-height: 1.05; }
+    .lab-calorimetro .lab-param .valore { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; width: 4.6em; flex: none; line-height: 1.05; }
     .lab-calorimetro .lab-param .nome { min-width: 0; font-size: .75rem; color: var(--testo2); text-align: center; white-space: nowrap; }
     .lab-calorimetro .lab-param output { min-width: 0; white-space: nowrap; }
-    .lab-calorimetro .lab-param[data-p="mat"] .valore { min-width: 5.4em; }
+    .lab-calorimetro .lab-param[data-p="mat"] .valore { width: 5.6em; }
     .lab-calorimetro .lab-param.fisso .btn { visibility: hidden; }
     .lab-calorimetro .lab-param.fisso output { color: var(--testo2); }
     .lab-calorimetro .lab-parametri.uno { grid-template-columns: 1fr; }
     /* sul telefono, con sette parametri (modalità libera), le righe si stringono */
     @container lab (max-width: 420px) {
       .lab-calorimetro .lab-parametri { gap: 4px 6px; }
+      .lab-calorimetro .lab-parametri:not(.uno) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
       .lab-calorimetro .lab-param { gap: 3px; }
       .lab-calorimetro .lab-param .btn { min-width: 34px; padding: 0 4px; }
-      .lab-calorimetro .lab-param .valore, .lab-calorimetro .lab-param[data-p="mat"] .valore { min-width: 0; flex: 1; }
+      .lab-calorimetro .lab-param .valore, .lab-calorimetro .lab-param[data-p="mat"] .valore { min-width: 0; width: auto; flex: 1; }
       .lab-calorimetro .lab-param output { font-size: .95rem; }
     }
     .lab-calorimetro .b-casuale { justify-self: center; }
@@ -51,7 +55,22 @@
     .lab-calorimetro .conta { position: absolute; left: 10px; top: 6px; margin: 0; font-size: .8rem; white-space: nowrap; pointer-events: none; }
     .lab-calorimetro .vinto { display: inline-block; animation: lab-calorimetro-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-calorimetro-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
+    /* il pannello ha la stessa altezza in ogni livello e nel Libero: righe dei parametri a passo fisso, e consegna + parametri
+       riservano lo spazio del caso più alto (2 righe di parametri sotto la consegna nei livelli, 4 nel Libero, dove la consegna non c'è) */
+    .lab-calorimetro .lab-lato { --riga: max(38px, 2rem); --cons: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); --pl: calc(2 * var(--riga) + 1 * 6px); --pf: calc(4 * var(--riga) + 3 * 6px); --blocco: max(calc(var(--cons) + 6px + var(--pl)), var(--pf)); }
+    .lab-calorimetro .lab-lato .lab-parametri { row-gap: 6px; grid-auto-rows: minmax(var(--riga), auto); align-content: center; min-height: calc(var(--blocco) - var(--cons) - 6px); }
+    .lab-calorimetro .lab-lato .consegna:empty { display: none; }
+    .lab-calorimetro .lab-lato .consegna:empty + .lab-parametri { min-height: var(--blocco); }
+    .lab-calorimetro .lab-barra { min-height: max(clamp(40px, 6cqh, 50px), 2.45rem); }
   `;
+
+  /* un testo che cambia sta nello spazio riservato: se non ci sta, si rimpicciolisce invece di spingere il resto */
+  function stringi(el) {
+    el.style.fontSize = '';
+    if (!el.clientHeight) return;
+    let f = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while ((el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) && n++ < 14) { f *= 0.93; el.style.fontSize = f + 'px'; }
+  }
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
   const C_ACQUA = 4186, ZERO_K = 273.15, TOL = 0.5;
@@ -583,7 +602,7 @@
         prove = 0; finito = false; fase = 'prima'; ultimo = null; segni = []; detti = {}; diFila = 0; mistero = null; misurato = false;
         if (L.mistero) nuovoMistero();
         aiutoEl.hidden = true;
-        consegnaEl.innerHTML = L.consegna;
+        consegnaEl.innerHTML = '<span>' + L.consegna + '</span>';
         msg.textContent = ''; msg.className = 'lab-messaggio';
         b.ric.textContent = 'Ricomincia';
         ridisegnaTutto(); aggiorna(); aggiornaLivelli(); aggiornaConta();
@@ -814,7 +833,12 @@
 
       avviaLivello(livello);
       let forma = '';
+      /* formula, consegna e messaggio hanno un'altezza fissa: se un testo non ci sta, si rimpicciolisce */
+      const fissi = [formulaEl, consegnaEl, msg].filter(Boolean);
+      const mo = new MutationObserver(() => fissi.forEach(stringi));
+      fissi.forEach(el => mo.observe(el, { childList: true, characterData: true, subtree: true }));
       const ro = new ResizeObserver(() => {
+        fissi.forEach(stringi);
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto(); adattaFormula();
@@ -822,7 +846,7 @@
       ro.observe(svg);
 
       return function smonta() {
-        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect();
+        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect(); mo.disconnect();
         window.removeEventListener('pointermove', muovi);
         window.removeEventListener('pointerup', molla);
         window.removeEventListener('pointercancel', molla);

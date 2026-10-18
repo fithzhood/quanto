@@ -11,16 +11,20 @@
     .lab-bersaglio .lab-scena { background: var(--sup2); overflow: hidden; touch-action: none; cursor: grab; }
     .lab-bersaglio .lab-scena > svg { width: 100%; height: 100%; }
     .lab-bersaglio svg text { font-family: var(--font); }
-    .lab-bersaglio .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); }
+    .lab-bersaglio svg text, .lab-bersaglio svg tspan { font-variant-numeric: tabular-nums !important; }   /* le cifre nella scena non ballano mentre un numero scorre (lo stile «font:» in linea le rimetterebbe proporzionali) */
+    .lab-bersaglio .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); height: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; display: flex; align-items: center; justify-content: center; }
+    .lab-bersaglio .consegna > span { display: block; }
     .lab-bersaglio .consegna b { color: var(--accento-testo); font-weight: 600; }
     .lab-bersaglio .consegna:empty { display: none; }
-    .lab-bersaglio .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px .7em; font-size: clamp(1rem, 2.3cqmin, 1.15rem); line-height: 1.25; min-height: 1.6em; }
+    .lab-bersaglio .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 2px .7em; font-size: clamp(1rem, 2.3cqmin, 1.15rem); line-height: 1.25; height: calc(4.6 * clamp(1rem, 2.3cqmin, 1.15rem)); flex: none; }
     .lab-bersaglio .formula .pezzo { display: inline-block; white-space: nowrap; }
     .lab-bersaglio .formula .ignoto { color: var(--testo3); }
     .lab-bersaglio .formula .esito { color: var(--s3); font-weight: 600; }
-    .lab-bersaglio .lab-messaggio { padding: 0 4px; min-height: 1.45em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    .lab-bersaglio .lab-messaggio { padding: 0 4px; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; height: calc(2.9 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; }
+    @container lab (min-aspect-ratio: 5 / 4) and (min-height: 560px) { .lab-bersaglio .formula { height: calc(6.6 * clamp(1rem, 2.3cqmin, 1.15rem)); } .lab-bersaglio .lab-messaggio { height: calc(4.35 * clamp(.9rem, 2.1cqmin, 1.05rem)); } }   /* nel pannello di lato c'è posto: la formula intera (anche la forma simbolica) e il messaggio su tre righe */
     .lab-bersaglio .lab-barra { padding: 0; border: 0; gap: 8px; justify-content: center; }
     .lab-bersaglio .lab-barra .btn { min-height: clamp(40px, 6cqh, 50px); }
+    @container lab (max-width: 460px) { .lab-bersaglio .lab-barra { gap: 4px; flex-wrap: nowrap; } .lab-bersaglio .lab-barra .btn { padding-left: 9px; padding-right: 9px; } .lab-bersaglio .lab-barra .b-aiuto { min-width: 38px; } }   /* quattro pulsanti in una riga: il secondo pulsante di alcuni livelli non manda la barra a capo */
     .lab-bersaglio .btn[disabled] { opacity: .38; cursor: default; }
     .lab-bersaglio .lab-barra .btn[hidden] { display: none; }
     .lab-bersaglio .lab-parametri { max-width: 520px; }
@@ -28,7 +32,9 @@
     .lab-bersaglio .lab-param[hidden], .lab-bersaglio .b-casuale[hidden] { display: none; }
     .lab-bersaglio .lab-parametri .b-casuale { justify-self: center; }
     .lab-bersaglio .lab-param .nome { min-width: 1.5em; white-space: nowrap; }
-    .lab-bersaglio .lab-param output { min-width: 2.6em; }
+    .lab-bersaglio .lab-param output { min-width: 0; width: 3.5ch; flex: none; white-space: nowrap; }
+    .lab-bersaglio .lab-param[data-p="n"] output { width: 2.1ch; }
+    .lab-bersaglio .lab-param[data-p="sig"] output { width: 2.6ch; }
     .lab-bersaglio .lab-param .unita { font-size: .85rem; color: var(--testo2); margin-left: -2px; }
     /* il pannello stretto (telefono, o pannello di lato) stringe i parametri: è un contenitore a sé */
     .lab-bersaglio .lab-lato { container: lato / inline-size; }
@@ -37,7 +43,7 @@
       .lab-bersaglio .lab-param { gap: 2px; }
       .lab-bersaglio .lab-param .nome { font-size: .8rem; min-width: 0; }
       .lab-bersaglio .lab-param .btn { min-width: 34px; padding: 0 4px; }
-      .lab-bersaglio .lab-param output { font-size: .92rem; min-width: 2.1em; }
+      .lab-bersaglio .lab-param output { font-size: .92rem; }
     }
     @container lab (max-width: 420px) { .lab-bersaglio .formula { font-size: 1rem; gap: 0 .6em; } }
     .lab-bersaglio .lab-param .scelta[aria-pressed="true"] { background: var(--accento); border-color: var(--accento); color: #fff; }
@@ -47,7 +53,22 @@
     .lab-bersaglio .conta { position: absolute; right: 10px; top: 8px; margin: 0; font-size: .85rem; white-space: nowrap; pointer-events: none; background: var(--sup2); padding: 0 4px; border-radius: 6px; }
     .lab-bersaglio .formula .stretto { display: none; }
     @container lab (max-width: 420px) { .lab-bersaglio .formula .largo { display: none; } .lab-bersaglio .formula .stretto { display: inline-block; } }
+    /* il pannello ha la stessa altezza in ogni livello e nel Libero: righe dei parametri a passo fisso, e consegna + parametri
+       riservano lo spazio del caso più alto (2 righe di parametri sotto la consegna nei livelli, 3 nel Libero, dove la consegna non c'è) */
+    .lab-bersaglio .lab-lato { --riga: max(38px, 2rem); --cons: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); --pl: calc(2 * var(--riga) + 1 * 6px); --pf: calc(3 * var(--riga) + 2 * 6px); --blocco: max(calc(var(--cons) + 6px + var(--pl)), var(--pf)); }
+    .lab-bersaglio .lab-lato .lab-parametri { row-gap: 6px; grid-auto-rows: minmax(var(--riga), auto); align-content: center; min-height: calc(var(--blocco) - var(--cons) - 6px); }
+    .lab-bersaglio .lab-lato .consegna:empty { display: none; }
+    .lab-bersaglio .lab-lato .consegna:empty + .lab-parametri { min-height: var(--blocco); }
+    .lab-bersaglio .lab-barra { min-height: max(clamp(40px, 6cqh, 50px), 2.45rem); }
   `;
+
+  /* un testo che cambia sta nello spazio riservato: se non ci sta, si rimpicciolisce invece di spingere il resto */
+  function stringi(el) {
+    el.style.fontSize = '';
+    if (!el.clientHeight) return;
+    let f = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while ((el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) && n++ < 14) { f *= 0.93; el.style.fontSize = f + 'px'; }
+  }
 
   /* ---------------- il caso (puro, senza disegno: lo usa anche la prova dei livelli) ---------------- */
   /* generatore a seme (mulberry32) e coppie di numeri normali (Box–Muller) */
@@ -394,7 +415,7 @@
         sel = 0; nLancio = L.n; prove = 0; colpo = null; bandierina = null; scoperto = false; verificaF = null;
         finito = false; perso = false; detti = {};
         vuota(gVolo); aiutoEl.hidden = true;
-        consegnaEl.innerHTML = L.consegna;
+        consegnaEl.innerHTML = '<span>' + L.consegna + '</span>';
         scrivi('');
         b.ric.textContent = 'Ricomincia';
         ridisegnaTutto(); aggiorna(); aggiornaLivelli();
@@ -657,7 +678,12 @@
 
       avviaLivello(livello, 0);
       let formaScena = '';
+      /* formula, consegna e messaggio hanno un'altezza fissa: se un testo non ci sta, si rimpicciolisce */
+      const fissi = [formulaEl, consegnaEl, msg].filter(Boolean);
+      const mo = new MutationObserver(() => fissi.forEach(stringi));
+      fissi.forEach(el => mo.observe(el, { childList: true, characterData: true, subtree: true }));
       const ro = new ResizeObserver(() => {
+        fissi.forEach(stringi);
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === formaScena || r.width < 10) return;
         formaScena = nuova; ridisegnaTutto();
@@ -665,7 +691,7 @@
       ro.observe(svg);
 
       return function smonta() {
-        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect();
+        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect(); mo.disconnect();
         window.removeEventListener('pointermove', muovi);
         window.removeEventListener('pointerup', molla);
         window.removeEventListener('pointercancel', molla);

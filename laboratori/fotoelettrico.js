@@ -49,6 +49,23 @@
     .lab-fotoelettrico.con-risposta .b-ric .stretto { display: inline; }
     .lab-fotoelettrico.con-risposta .b-ric .largo { display: none; }
     @container lab (max-width: 420px) { .lab-fotoelettrico .formula .simbolo { display: none; } .lab-fotoelettrico .formula .nome-stretto { display: inline; } }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-fotoelettrico .consegna { min-height: 2.9em; }   /* righe riservate alla consegna più lunga */
+    .lab-fotoelettrico .formula { height: 7.7rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-fotoelettrico .lab-messaggio { min-height: 3.2em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-fotoelettrico .consegna { min-height: 4.5em; } .lab-fotoelettrico .formula { height: 5.4rem; } }
+    .lab-fotoelettrico .lab-param output { text-align: center; }
+    .lab-fotoelettrico .lab-param[data-p="lam"] output { width: 6.8ch; min-width: 6.8ch; }   /* larga quanto «1000 nm» */
+    .lab-fotoelettrico .lab-param[data-p="N"] output { width: 5.4ch; min-width: 5.4ch; }   /* «50 /s» */
+    .lab-fotoelettrico .lab-param[data-p="met"] output { width: 5.2em; min-width: 5.2em; }   /* «magnesio» */
+    .lab-fotoelettrico .lab-param[data-p="V"] output, .lab-fotoelettrico .lab-param[data-p="Wg"] output { width: 2.7em; min-width: 2.7em; }   /* le cifre di questo carattere non sono tutte larghe uguali */
+    .lab-fotoelettrico .lab-barra .b-luce { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* «⏻ Spegni» largo quanto «💡 Accendi» */
+    .lab-fotoelettrico .lab-barra .b-luce::after { content: '💡 Accendi'; content: '💡 Accendi' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-fotoelettrico .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-fotoelettrico .lab-lato { min-height: 23.1rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-fotoelettrico .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 25.9rem) / 2)); padding-bottom: max(14px, calc((100cqh - 25.9rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
@@ -419,6 +436,23 @@
         box.V.title = fissi.indexOf('V') >= 0 ? 'Tensione fissa in questo livello' : 'tensione frenante';
       }
       /* il ponte con la teoria: E = hc/λ subito; K_max = E − W con il risultato dopo l'accensione (in modalità libera subito) */
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      /* il messaggio ha due righe fisse: se un testo è più lungo, si rimpicciolisce invece di spingere il resto */
+      function adattaMessaggio() {
+        msg.style.fontSize = ''; msg.style.height = ''; msg.style.minHeight = '';
+        const cs = getComputedStyle(msg), f0 = parseFloat(cs.fontSize), riga = parseFloat(cs.lineHeight) || f0 * 1.45;
+        const alto = Math.max(parseFloat(cs.minHeight) || 0, 2 * riga + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom));
+        msg.style.height = alto.toFixed(1) + 'px'; msg.style.minHeight = '0';
+        let f = f0;
+        while (msg.scrollHeight > msg.clientHeight + 1 && f > f0 * 0.7) { f *= 0.93; msg.style.fontSize = f.toFixed(2) + 'px'; }
+      }
+      new MutationObserver(adattaMessaggio).observe(msg, { childList: true, characterData: true, subtree: true });
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const L = liv(), M = metCorr(), E = HC / p.lam, K = E - M.W;
         const fatto = libero || (ultimo && ultimo.p.lam === p.lam);
@@ -441,7 +475,7 @@
           else if (K > 1e-9) pezzi.push(pezzo(ctx.tex('\\approx ' + texNum(K, 2) + '\\,\\text{eV}'), 'esito'));
           else pezzi.push(pezzo(ctx.tex('\\approx ' + texNum(K, 2) + '\\,\\text{eV}') + ' <span class="nulla">nessun elettrone</span>', 'ignoto'));
         }
-        formulaEl.innerHTML = pezzi.join('');
+        formulaEl.innerHTML = pezzi.join(''); adattaFormula();
       }
       function aggiornaLivelli() {
         const fatti = ctx.stato().livelli, sblocco = fatti.length ? Math.max.apply(null, fatti) + 1 : 0;
@@ -734,6 +768,7 @@
       avviaLivello(livello);
       let forma = '';
       const ridimensiona = () => {
+        adattaFormula(); adattaMessaggio();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

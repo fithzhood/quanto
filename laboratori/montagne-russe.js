@@ -10,16 +10,19 @@
     .lab-montagne-russe .lab-scena { background: linear-gradient(180deg, var(--sup2), var(--sup)); overflow: hidden; touch-action: none; cursor: crosshair; }
     .lab-montagne-russe .lab-scena > svg { width: 100%; height: 100%; }
     .lab-montagne-russe svg text { font-family: var(--font); }
-    .lab-montagne-russe .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); }
+    .lab-montagne-russe svg text, .lab-montagne-russe svg tspan { font-variant-numeric: tabular-nums !important; }   /* le cifre nella scena non ballano mentre un numero scorre (lo stile «font:» in linea le rimetterebbe proporzionali) */
+    .lab-montagne-russe .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); height: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; display: flex; align-items: center; justify-content: center; }
+    .lab-montagne-russe .consegna > span { display: block; }
     .lab-montagne-russe .consegna b { color: var(--accento-testo); font-weight: 600; }
     .lab-montagne-russe .consegna:empty { display: none; }
-    .lab-montagne-russe .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px .4em; font-size: clamp(1.05rem, 2.5cqmin, 1.2rem); line-height: 1.2; min-height: 2.4em; }
+    .lab-montagne-russe .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 2px .4em; font-size: clamp(1.05rem, 2.5cqmin, 1.2rem); line-height: 1.2; height: calc(4.4 * clamp(1.05rem, 2.5cqmin, 1.2rem)); flex: none; }
     .lab-montagne-russe .formula .pezzo { display: inline-block; white-space: nowrap; }
     .lab-montagne-russe .formula .ignoto { color: var(--testo3); }
     .lab-montagne-russe .formula .esito { color: var(--s3); font-weight: 600; }
     .lab-montagne-russe .formula .esito.no { color: var(--no); }
     .lab-montagne-russe .formula .dove { color: var(--testo2); font-size: .9em; }
-    .lab-montagne-russe .lab-messaggio { padding: 0 4px; min-height: 1.45em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    .lab-montagne-russe .lab-messaggio { padding: 0 4px; height: calc(2.9 * clamp(.9rem, 2.1cqmin, 1.05rem)); flex: none; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    @container lab (min-aspect-ratio: 5 / 4) and (min-height: 560px) { .lab-montagne-russe .formula { height: calc(6.4 * clamp(1.05rem, 2.5cqmin, 1.2rem)); } .lab-montagne-russe .lab-messaggio { height: calc(4.35 * clamp(.9rem, 2.1cqmin, 1.05rem)); } }   /* nel pannello di lato c'è posto: la formula intera (anche la forma simbolica) e il messaggio su tre righe */
     .lab-montagne-russe .lab-barra { padding: 0; border: 0; gap: 8px; justify-content: center; }
     .lab-montagne-russe .lab-barra .btn { min-height: clamp(40px, 6cqh, 50px); }
     .lab-montagne-russe .btn[disabled] { opacity: .38; cursor: default; }
@@ -28,19 +31,40 @@
     .lab-montagne-russe .lab-parametri .b-casuale[hidden] { display: none; }
     .lab-montagne-russe .lab-param[hidden] { display: none; }
     .lab-montagne-russe .lab-param .nome { min-width: 1.8em; }
-    .lab-montagne-russe .lab-param output { min-width: 3.2em; white-space: nowrap; }
+    .lab-montagne-russe .lab-param[data-p="h"] .nome { min-width: 0; width: 1.8em; flex: none; }   /* h, h₀, h₁…: cambia col punto scelto */
+    .lab-montagne-russe .lab-param output { min-width: 0; width: 5.6ch; flex: none; white-space: nowrap; }
+    .lab-montagne-russe .lab-param[data-p="v0"] output { width: 6.6ch; }
+    .lab-montagne-russe .lab-param[data-p="m"] output { width: 6.6ch; }
     .lab-montagne-russe .lab-param output .unita { font-size: .8em; font-weight: 500; color: var(--testo2); }
     .lab-montagne-russe.in-libero .lab-param { gap: 2px; }
     .lab-montagne-russe.in-libero .lab-param .nome { min-width: 1.3em; }
-    .lab-montagne-russe.in-libero .lab-param output { min-width: 2.9em; }
-    .lab-montagne-russe.in-libero .lab-parametri { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 6px; }
-    @container lab (max-width: 380px) { .lab-montagne-russe.in-libero .lab-param .btn { min-width: 32px; padding: 0 4px; } }
+        .lab-montagne-russe.in-libero .lab-parametri { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 6px; }
+    @container lab (max-width: 420px) { .lab-montagne-russe.in-libero .lab-param .btn { min-width: 32px; padding: 0 4px; } }
+    .lab-montagne-russe.in-libero .lab-param[data-p="h"] .nome { width: 1.5em; }
+    .lab-montagne-russe.in-libero .lab-param[data-p="h"] output { width: 5.1ch; }
+    .lab-montagne-russe.in-libero .lab-param[data-p="v0"] output, .lab-montagne-russe.in-libero .lab-param[data-p="m"] output { width: 5.9ch; }
+    .lab-montagne-russe.in-libero .lab-param[data-p="fd"] output { width: 4.6ch; }
     .lab-montagne-russe .lab-parametri.uno { grid-template-columns: 1fr; }
     .lab-montagne-russe .vinto { display: inline-block; animation: lab-mr-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-mr-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
     .lab-montagne-russe .formula .nome-stretto { display: none; }
     @container lab (max-width: 420px) { .lab-montagne-russe .formula .simbolo, .lab-montagne-russe .formula .dove { display: none; } .lab-montagne-russe .formula .nome-stretto { display: inline; } }
+    /* il pannello ha la stessa altezza in ogni livello e nel Libero: righe dei parametri a passo fisso, e consegna + parametri
+       riservano lo spazio del caso più alto (1 riga di parametri sotto la consegna nei livelli, 3 nel Libero, dove la consegna non c'è) */
+    .lab-montagne-russe .lab-lato { --riga: max(38px, 2rem); --cons: calc(4.2 * clamp(.9rem, 2.1cqmin, 1.05rem)); --pl: calc(1 * var(--riga) + 0 * 6px); --pf: calc(3 * var(--riga) + 2 * 6px); --blocco: max(calc(var(--cons) + 6px + var(--pl)), var(--pf)); }
+    .lab-montagne-russe .lab-lato .lab-parametri { row-gap: 6px; grid-auto-rows: minmax(var(--riga), auto); align-content: center; min-height: calc(var(--blocco) - var(--cons) - 6px); }
+    .lab-montagne-russe .lab-lato .consegna:empty { display: none; }
+    .lab-montagne-russe .lab-lato .consegna:empty + .lab-parametri { min-height: var(--blocco); }
+    .lab-montagne-russe .lab-barra { min-height: max(clamp(40px, 6cqh, 50px), 2.45rem); }
   `;
+
+  /* un testo che cambia sta nello spazio riservato: se non ci sta, si rimpicciolisce invece di spingere il resto */
+  function stringi(el) {
+    el.style.fontSize = '';
+    if (!el.clientHeight) return;
+    let f = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while ((el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) && n++ < 14) { f *= 0.93; el.style.fontSize = f + 'px'; }
+  }
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli in node) ---------------- */
   const G = 9.8, PASSO = 0.5, H_MAX = 25, CODA = 4, DX = 0.05;
@@ -578,7 +602,7 @@
         corse = 0; finito = false; ultimo = null; detti = {}; prima = null;
         scelto = primoLibero(); fPunto = L.fPunto != null ? L.fPunto : scelto;
         aiutoEl.hidden = true;
-        consegnaEl.innerHTML = CONSEGNE[n](fase);
+        consegnaEl.innerHTML = '<span>' + CONSEGNE[n](fase) + '</span>';
         msg.textContent = ''; msg.className = 'lab-messaggio';
         b.via.disabled = false; b.ric.textContent = 'Ricomincia';
         ridisegnaTutto(); aggiorna(); aggiornaLivelli();
@@ -623,7 +647,7 @@
         const v = verdetto(L, punti, r, sg, m);
         if (v.ok && L.masse && fase === 0) {   /* livello 3: prima vuoto, poi pieno */
           fase = 1; vintoFase0 = punti[0].y; m = L.masse[1];
-          consegnaEl.innerHTML = CONSEGNE[livello](fase);
+          consegnaEl.innerHTML = '<span>' + CONSEGNE[livello](fase) + '</span>';
           msg.textContent = v.testo + ' Ora il carrello è pieno: 800\u00a0kg.'; msg.className = 'lab-messaggio ok';
           ultimo = null; ctx.mascotte('giusto'); disegnaEsito(); statico(); aggiorna();
           return;
@@ -837,7 +861,12 @@
       radice.mrPunti = () => punti; radice.mrS = () => S;   /* per il banco di prova */
       avviaLivello(livello);
       let forma = '';
+      /* formula, consegna e messaggio hanno un'altezza fissa: se un testo non ci sta, si rimpicciolisce */
+      const fissi = [formulaEl, consegnaEl, msg].filter(Boolean);
+      const mo = new MutationObserver(() => fissi.forEach(stringi));
+      fissi.forEach(el => mo.observe(el, { childList: true, characterData: true, subtree: true }));
       const ro = new ResizeObserver(() => {
+        fissi.forEach(stringi);
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; if (!animando) ridisegnaTutto(); else { geometria(); disegnaFondo(); disegnaPista(); disegnaPunti(); }
@@ -845,7 +874,7 @@
       ro.observe(svg);
 
       return function smonta() {
-        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect();
+        cancelAnimationFrame(raf); fermaRipeti(); ro.disconnect(); mo.disconnect();
         window.removeEventListener('pointermove', muovi);
         window.removeEventListener('pointerup', molla);
         window.removeEventListener('pointercancel', molla);

@@ -44,6 +44,19 @@
       .lab-corda .lab-param output { min-width: 3.3em; font-size: .92em; }
       .lab-corda .lab-parametri { gap: 4px 6px; }
     }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-corda .consegna { min-height: 4.2em; }   /* righe riservate alla consegna più lunga */
+    .lab-corda .formula { height: 8rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-corda .lab-messaggio { min-height: 3.2em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-corda .consegna { min-height: 4.2em; } .lab-corda .formula { height: 5.6rem; } .lab-corda.in-libero .lab-messaggio { min-height: 3.2em; } }
+    .lab-corda .lab-param output { width: 6.8ch; min-width: 6.8ch; text-align: center; }   /* larga quanto «149,5 Hz»: le cifre non spostano i pulsanti */
+    .lab-corda .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-corda .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-corda .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-corda .lab-lato { min-height: 20.8rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-corda .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 28.5rem) / 2)); padding-bottom: max(14px, calc((100cqh - 28.5rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura: la usa anche la prova dei livelli in node) ---------------- */
@@ -368,6 +381,13 @@
         parametriEl.classList.toggle('uno', !libero);
       }
       /* il ponte con la teoria: i numeri scelti nella formula; il risultato solo dopo l'accensione (in modalità libera subito) */
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const L = liv(), c = corda(p);
         const fatto = libero || (ultimo && ultimo.f === p.f && ultimo.F === p.F && ultimo.L === p.L && ultimo.mu === p.mu);
@@ -390,7 +410,7 @@
           pezzi.push('<span class="pezzo">' + ctx.tex('\\dfrac{f_1}{20\\,\\text{Hz}} = \\sqrt{\\dfrac{F}{16\\,\\text{N}}} = \\sqrt{\\dfrac{' + texA(p.F) + '}{16}}') + '</span>');
           pezzi.push(ris('\\approx ' + texNum(r, 2) + ',\\ \\ f_1 \\approx ' + texNum(20 * r, 1) + '\\,\\text{Hz}'));
         }
-        formulaEl.innerHTML = pezzi.join('');
+        formulaEl.innerHTML = pezzi.join(''); adattaFormula();
       }
       function aggiornaLivelli() {
         const fatti = ctx.stato().livelli, sblocco = fatti.length ? Math.max.apply(null, fatti) + 1 : 0;
@@ -587,6 +607,7 @@
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaFormula();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

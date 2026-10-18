@@ -37,6 +37,19 @@
     .lab-decadimento .formula .nome-stretto { display: none; }
     @container lab (max-width: 520px) { .lab-decadimento .conta { display: none; } }
     @container lab (max-width: 420px) { .lab-decadimento .formula .simbolo.cede { display: none; } .lab-decadimento .formula .nome-stretto { display: inline; } }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-decadimento .consegna { min-height: 4.2em; }   /* righe riservate alla consegna più lunga */
+    .lab-decadimento .formula { height: 5.6rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-decadimento .lab-messaggio { min-height: 3em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-decadimento .consegna { min-height: 4.2em; } .lab-decadimento .formula { height: 4rem; } }
+    .lab-decadimento .lab-barra .b-via { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga quanto l'etichetta più lunga: «Ferma», «Avvia», «Da capo» non spostano gli altri pulsanti */
+    .lab-decadimento .lab-barra .b-via::after { content: '▶ Riprendi'; content: '▶ Riprendi' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    .lab-decadimento .lab-barra .b-via.largo::after { content: '▶ Nuova scatola'; content: '▶ Nuova scatola' / ''; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-decadimento .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-decadimento .lab-lato { min-height: 19rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-decadimento .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 22.2rem) / 2)); padding-bottom: max(14px, calc((100cqh - 22.2rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
@@ -481,6 +494,13 @@
       }
       /* il ponte con la teoria: la legge con i numeri; il risultato solo dopo la corsa */
       let ultimaFormula = 0;
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const L = liv(), pezzi = [], mezzo = '\\left(\\tfrac{1}{2}\\right)';
         const P = (s, cls) => '<span class="pezzo ' + (cls || '') + '">' + ctx.tex(s) + '</span>';
@@ -514,7 +534,7 @@
           pezzi.push(numerico('N = ' + L.N0 + ' \\cdot ' + mezzo + '^{' + texNum(tNow, 1) + '/' + L.T + '}'));
           pezzi.push(P('\\approx ' + texNum(legge(L.N0, L.T, tNow), L.N0 < 100 ? 1 : 0), 'esito'));
         }
-        formulaEl.innerHTML = pezzi.join('');
+        formulaEl.innerHTML = pezzi.join(''); adattaFormula();
         ultimaFormula = performance.now();
       }
       function aggiornaLivelli() {
@@ -535,6 +555,7 @@
         b.verifica.disabled = finito;
         if (libera) b.via.textContent = animando ? '⏸ Ferma' : (tNow <= 0 ? '▶ Avvia' : (tNow >= vista() - 1e-9 ? '▶ Da capo' : '▶ Riprendi'));
         else b.via.textContent = L.sopravv && daRifare ? '▶ Nuova scatola' : '▶ Avvia';
+        b.via.classList.toggle('largo', !libera && !!L.sopravv);   /* nei livelli dove compare «Nuova scatola» il suo posto è riservato da subito */
         b.via.disabled = !libera && (animando || finito);
         b.ric.disabled = animando && !libera;
         aggiornaParametri();
@@ -852,6 +873,7 @@
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaFormula();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

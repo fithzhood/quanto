@@ -498,6 +498,12 @@ a.stat:hover, .stat.riprendi:hover { transform: translateY(-2px); border-color: 
 .lab-azioni .btn svg { width: 16px; height: 16px; }
 .lab-stage { position: relative; min-height: 200px; width: 100%; }
 .lab-stage .lab-scena { touch-action: none; user-select: none; -webkit-user-select: none; }
+/* Nei laboratori niente testo selezionabile (si tocca e si trascina: una selezione blu a ogni tocco disturba),
+   tranne dove si scrive; e cifre tutte larghe uguali, così un numero che cambia non sposta quello che gli sta accanto. */
+.schermo-lab, .schermo-lab * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.schermo-lab input, .schermo-lab textarea, .schermo-lab [contenteditable="true"] { -webkit-user-select: text; user-select: text; }
+.schermo-lab { font-variant-numeric: tabular-nums; }
+.mascotte, .mascotte * { -webkit-user-select: none; user-select: none; }   /* Stilla e i suoi fumetti sono interfaccia, non testo da copiare */
 .lab-stage .lab-scena svg, .lab-stage .lab-scena canvas { display: block; width: 100%; height: auto; }
 .lab-barra { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--bordo); }
 .lab-barra .btn { min-height: 42px; }

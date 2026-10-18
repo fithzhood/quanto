@@ -36,6 +36,21 @@
     @keyframes lab-dinamo-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
     .lab-dinamo .formula .simbolo { display: inline-block; }
     @container lab (max-width: 420px) { .lab-dinamo .formula .simbolo { display: none; } }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-dinamo .consegna { min-height: 2.9em; }   /* righe riservate alla consegna più lunga */
+    .lab-dinamo .formula { height: 7.4rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-dinamo .lab-messaggio { min-height: 3em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-dinamo .consegna { min-height: 4.2em; } .lab-dinamo .formula { height: 5.5rem; } }
+    .lab-dinamo .lab-param output { text-align: center; }
+    .lab-dinamo .lab-param[data-p="f"] output { width: 4.3em; min-width: 4.3em; }   /* larga quanto «0,8 mWb»: le cifre non spostano i pulsanti */
+    .lab-dinamo .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-dinamo .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    .lab-dinamo .lab-messaggio.ok { animation: none; }   /* i lampi contati non fanno sobbalzare il messaggio; la vittoria salta già con .vinto */
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-dinamo .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-dinamo .lab-lato { min-height: 18.6rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-dinamo .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 22.2rem) / 2)); padding-bottom: max(14px, calc((100cqh - 22.2rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
@@ -448,6 +463,13 @@
       function tieni(t) {
         if (!tenuto || Math.abs(riv.e) >= Math.abs(tenuto.e) || t - tenuto.t > 0.8) tenuto = { t, phi: riv.phi, dphi: riv.dphi, dt: riv.dt, e: riv.e };
       }
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const z = tenuto || { phi: riv.phi, dphi: riv.dphi, dt: riv.dt, e: riv.e }, dphi = z.dphi, e = z.e;
         const pezzi = [];
@@ -456,7 +478,7 @@
         const dp = texNum(dphi, 3), dpS = /^-/.test(dp) ? '(' + dp + ')' : dp;
         pezzi.push('<span class="pezzo">' + ctx.tex('\\mathcal{E} = -' + N + ' \\cdot \\dfrac{' + dpS + '\\,\\text{mWb}}{' + texNum(z.dt, 2) + '\\,\\text{s}}') + '</span>');
         pezzi.push('<span class="pezzo esito">' + ctx.tex('\\approx ' + texNum(e, 2) + '\\,\\text{V}') + '</span>');
-        formulaEl.innerHTML = pezzi.join('');
+        formulaEl.innerHTML = pezzi.join(''); adattaFormula();
       }
 
       /* ---------------- il tempo: un campione a ogni evento del dito e a ogni fotogramma ---------------- */
@@ -667,6 +689,7 @@
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaFormula();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

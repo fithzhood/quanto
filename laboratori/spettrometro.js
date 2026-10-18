@@ -42,6 +42,25 @@
     .lab-spettrometro .conta { position: absolute; right: 10px; top: 8px; margin: 0; font-size: .8rem; white-space: nowrap; pointer-events: none; }
     .lab-spettrometro .vinto { display: inline-block; animation: lab-spettrometro-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-spettrometro-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
+    /* layout fermo: i numeri che cambiano e i cambi di livello non spostano niente */
+    .lab-spettrometro .consegna { min-height: 3.1em; }   /* righe riservate alla consegna più lunga */
+    .lab-spettrometro .formula { height: 12.2rem; min-height: 0; overflow: hidden; align-content: center; }   /* altezza fissa: un caso troppo grande si rimpicciolisce (adattaFormula) */
+    .lab-spettrometro .lab-messaggio { min-height: 3em; }   /* due righe riservate al messaggio */
+    @container lab (max-width: 420px) { .lab-spettrometro .consegna { min-height: 3.1em; } .lab-spettrometro .formula { height: 6rem; } }
+    .lab-spettrometro .lab-messaggio { min-height: 3.2em; }
+    .lab-spettrometro .lab-param output { text-align: center; }
+    .lab-spettrometro .lab-param[data-p="E"] output { width: 7.4ch; min-width: 7.4ch; }   /* larga quanto «39,5 kV/m» */
+    .lab-spettrometro .lab-param .b-verso { width: 6.2em; }   /* «⊗ entra» e «⊙ esce» larghi uguali */
+    .lab-spettrometro .lab-param[data-p="B"] output, .lab-spettrometro .lab-param[data-p="B1"] output { width: 3.3em; min-width: 3.3em; }   /* le cifre di questo carattere non sono tutte larghe uguali: casella fissa */
+    .lab-spettrometro .lab-param[data-p="v"] output { width: 5.6em; min-width: 5.6em; }
+    .lab-spettrometro .lab-param.ione output { width: 3.6em; min-width: 3.6em; }
+    .lab-spettrometro .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-spettrometro .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-spettrometro .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-spettrometro .lab-lato { min-height: 22.5rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-spettrometro .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 30.6rem) / 2)); padding-bottom: max(14px, calc((100cqh - 30.6rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli in node) ---------------- */
@@ -489,6 +508,13 @@
         b.verso.disabled = animando;
       }
       /* il ponte con la teoria: v = E/B₁ (nel filtro) e r = m·v/(q·B), con i numeri scelti; il raggio solo dopo il tiro */
+      /* la formula ha un'altezza fissa: se un caso non ci sta, si rimpicciolisce invece di spingere il resto */
+      function adattaFormula() {
+        formulaEl.style.fontSize = '';
+        const f0 = parseFloat(getComputedStyle(formulaEl).fontSize);
+        let f = f0;
+        while ((formulaEl.scrollHeight > formulaEl.clientHeight + 1 || formulaEl.scrollWidth > formulaEl.clientWidth + 1) && f > f0 * 0.7) { f *= 0.93; formulaEl.style.fontSize = f.toFixed(2) + 'px'; }
+      }
       function aggiornaFormula() {
         const L = liv(), v = velocita(p, L), filtro = !!L.filtro, unico = filtro && L.filtro.unico;
         const fatto = libero || (ultimo && ['v', 'E', 'B1', 'B', 's'].every(k => ultimo.p[k] === p[k]));
@@ -511,7 +537,7 @@
         if (filtro && !(v > 0)) pezzi.pop();
         const rr = L.ioni.map(id => { const r = raggio(IONI[id], v, p.B); return (L.ioni.length > 1 ? 'r_{' + IONI[id].a + '}' : '') + ' \\approx ' + (r < 1000 ? texNum(r, 1) + '\\,\\text{cm}' : '\\infty'); });
         if (v > 0) pezzi.push(ris(rr.join(',\\ ')));
-        formulaEl.innerHTML = pezzi.join('');
+        formulaEl.innerHTML = pezzi.join(''); adattaFormula();
       }
       function aggiornaLivelli() {
         const fatti = ctx.stato().livelli, sblocco = fatti.length ? Math.max.apply(null, fatti) + 1 : 0;
@@ -835,6 +861,7 @@
       avviaLivello(livello);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaFormula();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();

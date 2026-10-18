@@ -13,14 +13,17 @@
     .lab-pistone svg text { font-family: var(--font); }
     .lab-pistone .consegna { text-align: center; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); line-height: 1.4; color: var(--testo); }
     .lab-pistone .consegna b { color: var(--accento-testo); font-weight: 600; }
+    .lab-pistone .consegna { min-height: 4.2em; }   /* tre righe riservate: cambiare livello non sposta il resto */
     .lab-pistone .consegna:empty { display: none; }
-    .lab-pistone .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px .4em; font-size: clamp(1rem, 2.4cqmin, 1.15rem); line-height: 1.2; min-height: 2.4em; }
+    .lab-pistone .formula { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 2px .4em; font-size: clamp(1rem, 2.4cqmin, 1.15rem); line-height: 1.2; min-height: 7.2em; }   /* l'altezza del caso più alto (la radice del livello 5) */
     .lab-pistone .formula .pezzo { display: inline-block; white-space: nowrap; }
-    .lab-pistone .formula .ignoto { color: var(--testo3); }
+    .lab-pistone .formula .ignoto { color: var(--testo3); display: inline-grid; justify-items: center; align-items: center; }
+    .lab-pistone .formula .ignoto > * { grid-area: 1 / 1; }
+    .lab-pistone .formula .ignoto .fantasma { visibility: hidden; font-weight: 600; }   /* il risultato nascosto tiene già il suo posto: la prova non manda a capo */
     .lab-pistone .formula .esito { color: var(--s3); font-weight: 600; }
     .lab-pistone .formula .nome-stretto { display: none; }
-    @container lab (max-width: 420px) { .lab-pistone .formula .simbolo { display: none; } .lab-pistone .formula .nome-stretto { display: inline; } .lab-pistone .formula { font-size: 1rem; } }
-    .lab-pistone .lab-messaggio { padding: 0 4px; min-height: 1.45em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
+    @container lab (max-width: 420px) { .lab-pistone .formula .simbolo { display: none; } .lab-pistone .formula .nome-stretto { display: inline; } .lab-pistone .formula { font-size: 1rem; min-height: 5.6em; } }
+    .lab-pistone .lab-messaggio { padding: 0 4px; min-height: 2.9em; font-size: clamp(.9rem, 2.1cqmin, 1.05rem); text-align: center; line-height: 1.45; }
     .lab-pistone .lab-barra { padding: 0; border: 0; gap: 8px; justify-content: center; }
     .lab-pistone .lab-barra .btn { min-height: clamp(40px, 6cqh, 50px); }
     @container lab (max-width: 420px) { .lab-pistone .lab-barra { gap: 5px; } .lab-pistone .lab-barra .btn { padding-left: 8px; padding-right: 8px; font-size: .82rem; } }   /* a 130 %: dopo la vittoria i pulsanti restano su una riga */
@@ -48,6 +51,13 @@
     .lab-pistone .conta { position: absolute; left: 10px; top: 6px; margin: 0; font-size: .8rem; white-space: nowrap; pointer-events: none; }
     .lab-pistone .vinto { display: inline-block; animation: lab-pistone-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-pistone-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
+    .lab-pistone .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
+    .lab-pistone .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
+    /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
+       formula, messaggio e barra in basso; dove i comandi sono meno resta spazio vuoto in mezzo, e niente salta */
+    .lab-pistone .lab-lato > .formula { margin-top: auto; }
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-pistone .lab-lato { min-height: 20.8rem; } .lab-pistone .lab-barra { min-height: 2.31rem; } }
+    @container lab (min-aspect-ratio: 5 / 4) { .lab-pistone .lab-lato { justify-content: flex-start; padding-top: max(14px, calc((100cqh - 27.3rem) / 2)); padding-bottom: max(14px, calc((100cqh - 27.3rem) / 2)); } }
   `;
 
   /* ---------------- fisica (pura, senza disegno: la usa anche la prova dei livelli) ---------------- */
@@ -469,12 +479,23 @@
         b.pistone.textContent = 'Pistone: ' + (pistoneLibero ? 'libero' : 'bloccato');
       }
       /* il ponte con la teoria: p·V = n·R·T con i numeri scelti; il risultato solo dopo la prova (in modalità libera subito) */
+      /* il messaggio ha due righe fisse: se un testo è più lungo, si rimpicciolisce invece di spingere il resto */
+      function adattaMessaggio() {
+        msg.style.fontSize = ''; msg.style.height = ''; msg.style.minHeight = '';
+        const cs = getComputedStyle(msg), f0 = parseFloat(cs.fontSize), riga = parseFloat(cs.lineHeight) || f0 * 1.45;
+        const alto = Math.max(parseFloat(cs.minHeight) || 0, 2 * riga + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom));
+        msg.style.height = alto.toFixed(1) + 'px'; msg.style.minHeight = '0';
+        let f = f0;
+        while (msg.scrollHeight > msg.clientHeight + 1 && f > f0 * 0.7) { f *= 0.93; msg.style.fontSize = f.toFixed(2) + 'px'; }
+      }
+      new MutationObserver(adattaMessaggio).observe(msg, { childList: true, characterData: true, subtree: true });
       function aggiornaFormula() {
         const L = liv(), s = stato(L, q);
         const fatto = libero || (!animando && ultimo && ultimo.q.n === q.n && ultimo.q.T === q.T && ultimo.q.V === q.V && ultimo.q.c === q.c);
         const pezzi = [];
         const numerico = t => { const i = t.indexOf(' = '); return '<span class="pezzo"><span class="nome-stretto">' + ctx.tex(t.slice(0, i)) + ' </span>' + ctx.tex(t.slice(i + 1)) + '</span>'; };
-        const ris = t => fatto ? '<span class="pezzo esito">' + ctx.tex(t) + '</span>' : '<span class="pezzo ignoto">' + ctx.tex('\\approx\\ ?') + '</span>';
+        const ignoto = (t, chiesto) => '<span class="pezzo ignoto"><span class="fantasma">' + ctx.tex(t) + '</span><span>' + ctx.tex(chiesto) + '</span></span>';
+        const ris = t => fatto ? '<span class="pezzo esito">' + ctx.tex(t) + '</span>' : ignoto(t, '\\approx\\ ?');
         const nRT = texNum(q.n, 1) + ' \\cdot 8{,}31 \\cdot ' + q.T;
         let tipo = L.formula;
         if (L.libero) tipo = libPistone() ? 'V' : 'p';
@@ -486,7 +507,7 @@
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex('p \\cdot V = n \\cdot R \\cdot T') + '</span>');
           pezzi.push(numerico('V = \\dfrac{' + nRT + '}{' + texMigliaia(q.c * 1000) + '}\\,\\text{m}^3'));
           pezzi.push(ris('\\approx ' + texNum(s.V, 1) + '\\,\\text{L}' + (s.fermo ? '\\ (\\text{fermo})' : '')));
-          if (tipo === 'Vv') pezzi.push(fatto ? '<span class="pezzo esito">' + ctx.tex('v_{qm} \\approx ' + texNum(s.v, 0) + '\\,\\text{m/s}') + '</span>' : '<span class="pezzo ignoto">' + ctx.tex('v_{qm} \\approx\\ ?') + '</span>');
+          if (tipo === 'Vv') pezzi.push(fatto ? '<span class="pezzo esito">' + ctx.tex('v_{qm} \\approx ' + texNum(s.v, 0) + '\\,\\text{m/s}') + '</span>' : ignoto('v_{qm} \\approx ' + texNum(s.v, 0) + '\\,\\text{m/s}', 'v_{qm} \\approx\\ ?'));
         } else if (tipo === 'v') {
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex('v_{qm} = \\sqrt{\\dfrac{3 \\cdot R \\cdot T}{M}}') + '</span>');
           pezzi.push(numerico('v_{qm} = \\sqrt{\\dfrac{3 \\cdot 8{,}31 \\cdot ' + q.T + '}{0{,}028}}\\,\\text{m/s}'));
@@ -695,6 +716,7 @@
       raf = requestAnimationFrame(fotogramma);
       let forma = '';
       const ro = new ResizeObserver(() => {
+        adattaMessaggio();
         const r = svg.getBoundingClientRect(), nuova = Math.round(r.width) + 'x' + Math.round(r.height);
         if (nuova === forma || r.width < 10) return;
         forma = nuova; ridisegnaTutto();
