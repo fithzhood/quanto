@@ -167,12 +167,14 @@
   const AIUTO_LIBERO = 'In modalità libera non c\'è traguardo. Scegli la massa m, la velocità iniziale v₀, l\'attrito μ<sub>d</sub> (zero è il ghiaccio) e il programma delle spinte, poi «Via». Con l\'attrito la formula diventa a = (F − F<sub>d</sub>) / m, con F<sub>d</sub> = μ<sub>d</sub>·m·g contro il moto. Il grafico della corsa precedente resta tratteggiato, per confrontare. «Casuale» propone un programma a caso, «Ricomincia» lo cancella.';
 
   /* ---------------- numeri ---------------- */
+  /* decimali fissi: gli zeri finali restano (0,50, mai 0,5) e il «meno zero» diventa zero */
   function num(v, d) {
     let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
-    if (d > 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
-    if (s === '-0') s = '0';
+    if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
     return s.replace('.', ',').replace('-', '−');
   }
+  /* quanti decimali servono a scrivere esatto x (al più max): per l'accelerazione F/m con F a passi di 10 N */
+  function decimali(x, max) { for (let d = 0; d < max; d++) if (Math.abs(x * Math.pow(10, d) - Math.round(x * Math.pow(10, d))) < 1e-9) return d; return max; }
   function texNum(v, d) { return num(v, d).replace(',', '{,}').replace('−', '-'); }
   const segno = F => F > 0 ? '+' + F : (F < 0 ? '−' + (-F) : '0');
 
@@ -552,7 +554,7 @@
           const vm = statoA(simula(Lib, piano), sel + 0.5).v, segnoD = vm < 0 || (vm === 0 && F < 0) ? '+' : '-';   /* F_d contro il moto */
           if (vm === 0 && Math.abs(F) <= MU_S * Fd + 1e-9) {   /* ferma: l'attrito statico pareggia la spinta */
             pezzi.push('<span class="pezzo">ferma: ' + ctx.tex('|F_{' + (sel + 1) + '}| \\le ' + texNum(MU_S * Fd, 1) + '\\,\\text{N}') + '</span>');
-            pezzi.push(esito(nome + ' = 0'));
+            pezzi.push(esito(nome + ' = ' + texNum(0, 3)));
           } else {
             pezzi.push('<span class="pezzo simbolo">' + ctx.tex(nome + ' = \\dfrac{F_{' + (sel + 1) + '} ' + segnoD + ' F_d}{m}') + '</span>');
             const a = (F + (segnoD === '+' ? Fd : -Fd)) / Lib.m;
@@ -563,7 +565,7 @@
           const nome = 'a_{' + (sel + 1) + '}';
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex(nome + ' = \\dfrac{F_{' + (sel + 1) + '}}{m}') + '</span>');
           pezzi.push(numerico(nome, '\\dfrac{' + texNum(F, 0) + '\\,\\text{N}}{' + L.m + '\\,\\text{kg}}'));
-          pezzi.push(esito('= ' + texNum(F / L.m, 3) + '\\,\\text{m/s}^2'));
+          pezzi.push(esito('= ' + texNum(F / L.m, libero ? 3 : decimali(PASSO_F / L.m, 3)) + '\\,\\text{m/s}^2'));   /* nel livello la massa è fissa: i decimali li decide il passo di 10 N */
         }
         formulaEl.innerHTML = pezzi.join('');
       }

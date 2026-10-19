@@ -113,7 +113,7 @@
   const VITTORIE = [
     () => 'Dopo un tempo T ne resta metà: quale nucleo decade non si sa, quanti sì.',
     () => 'Un quarto è metà della metà: due dimezzamenti, 12\u00a0s. Non si toglie metà e poi l\'altra metà.',
-    x => 'T ≈ ' + num(x, x % 1 ? 1 : 0) + ' s: in ogni tratto lungo T il numero si dimezza, da qualunque istante parti.',
+    x => 'T ≈ ' + num(x, 1) + ' s: in ogni tratto lungo T il numero si dimezza, da qualunque istante parti.',
     () => 'Tre dimezzamenti: 400, 200, 100, 50. Resta un ottavo, non zero.',
     () => 'Un nucleo non invecchia: chi è sopravvissuto ha la stessa probabilità di prima, e ne decade metà.',
     () => 'L\'attività è proporzionale ai nuclei rimasti: si dimezza con lo stesso T.',
@@ -140,7 +140,7 @@
   const gruppi = (s, sep) => s.length > 4 ? s.replace(/\B(?=(\d{3})+(?!\d))/g, sep) : s;   /* 5730, ma 11 460 */
   function intero(n) { n = Math.round(n); return (n < 0 ? '−' : '') + gruppi(String(Math.abs(n)), ' '); }
   function texInt(n) { return gruppi(String(Math.round(n)), '\\,'); }
-  const texT = v => v % 1 ? texNum(v, 1) : String(v);
+  const texT = v => texNum(v, 1);   /* tempi a passi di 0,5 s: sempre un decimale */
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };
@@ -323,7 +323,7 @@
         }
         infoT.textContent = 't = ' + (L.u === 'anni' ? intero(Math.round(tNow / 10) * 10) + '\u00a0anni' : num(tNow, 1) + '\u00a0s');
         const v = velocita();
-        infoVel.textContent = L.u === 'anni' ? '1\u00a0s vero ≈ ' + intero(Math.round(v / 100) * 100) + '\u00a0anni' : 'veloce ×' + num(v, v < 10 ? 1 : 0);
+        infoVel.textContent = L.u === 'anni' ? '1\u00a0s vero ≈ ' + intero(Math.round(v / 100) * 100) + '\u00a0anni' : 'veloce ×' + num(v, 1);
         vuota(infoN);
         if (L.coperto) {
           const k = Math.floor(tNow), A = k >= 1 ? contaIn(camp, k - 1, k) : null;
@@ -367,7 +367,7 @@
         const sy = passoBello(Y, P.h, 30, modo() === '%' ? [1, 2.5, 5] : null);
         for (let y = 0; y <= Y + 1e-9; y += sy) {
           gAssi.appendChild(el('line', { x1: P.x, y1: PY(y), x2: P.x + P.w, y2: PY(y), stroke: 'var(--bordo)', 'stroke-width': 1, opacity: .7 }));
-          gAssi.appendChild(el('text', { x: P.x - 5, y: PY(y) + 4, 'text-anchor': 'end', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, modo() === '%' ? y + ' %' : String(Math.round(y))));
+          gAssi.appendChild(el('text', { x: P.x - 5, y: PY(y) + 4, 'text-anchor': 'end', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, modo() === '%' ? num(y, sy % 1 ? 1 : 0) + ' %' : String(Math.round(y))));
         }
         const sx = passoBello(V, P.w, L.u === 'anni' ? 56 : 36);
         for (let t = 0; t <= V + 1e-9; t += sx) {
@@ -472,7 +472,7 @@
       function valore(v) {
         const L = liv();
         if (L.tipo === 'numero') return String(v);
-        return L.u === 'anni' ? intero(v) + '\u00a0anni' : num(v, v % 1 ? 1 : 0) + '\u00a0s';
+        return L.u === 'anni' ? intero(v) + '\u00a0anni' : num(v, L.passo % 1 ? 1 : 0) + '\u00a0s';
       }
       const limiti = L => L.sopravv ? [0, S] : L.lim;
       function impostaNome() {
@@ -485,7 +485,7 @@
       }
       function aggiornaParametri() {
         const L = liv();
-        box.x.querySelector('output').textContent = L.tipo === 'numero' ? String(x) : (L.u === 'anni' ? intero(x) : num(x, x % 1 ? 1 : 0));
+        box.x.querySelector('output').textContent = L.tipo === 'numero' ? String(x) : (L.u === 'anni' ? intero(x) : num(x, L.passo % 1 ? 1 : 0));
         box.n0.hidden = !libero; parametriEl.classList.toggle('uno', !libero);
         box.n0.querySelector('output').textContent = String(N0_LIBERI[lib.iN0]);
         const lim = limiti(L), blocca = (animando && L.tipo !== 'misura') || finito || (L.sopravv && daRifare);
@@ -505,7 +505,7 @@
         const L = liv(), pezzi = [], mezzo = '\\left(\\tfrac{1}{2}\\right)';
         const P = (s, cls) => '<span class="pezzo ' + (cls || '') + '">' + ctx.tex(s) + '</span>';
         const numerico = s => { const i = s.indexOf(' = '); return '<span class="pezzo"><span class="nome-stretto">' + ctx.tex(s.slice(0, i)) + ' </span>' + ctx.tex(s.slice(i + 1)) + '</span>'; };
-        const ris = v => (Math.abs(v - Math.round(v)) < 1e-9 ? '= ' + texInt(v) : '\\approx ' + texNum(v, v < 10 ? 1 : 0));
+        const ris = v => (Math.abs(v - Math.round(v)) < 1e-9 ? '= ' + texInt(v) : '\\approx ' + texNum(v, 0));   /* nuclei: sempre interi */
         if (L.tipo === 'tempo') {
           const fatto = ultimo && ultimo.x === x;
           if (L.c14) {
@@ -532,7 +532,7 @@
         } else {   /* libero: la legge all'istante dell'orologio */
           pezzi.push(P('N = N_0 \\cdot ' + mezzo + '^{t/T}', 'simbolo cede'));
           pezzi.push(numerico('N = ' + L.N0 + ' \\cdot ' + mezzo + '^{' + texNum(tNow, 1) + '/' + L.T + '}'));
-          pezzi.push(P('\\approx ' + texNum(legge(L.N0, L.T, tNow), L.N0 < 100 ? 1 : 0), 'esito'));
+          pezzi.push(P('\\approx ' + texNum(legge(L.N0, L.T, tNow), 1), 'esito'));
         }
         formulaEl.innerHTML = pezzi.join(''); adattaFormula();
         ultimaFormula = performance.now();
@@ -655,7 +655,7 @@
           else t = t.slice(0, -1) + (L.c14 ? ': la legge dice ' + num(100 * legge(1, L.T, xa), 0) + ' %.' : ': la legge dice ' + num(legge(L.N0, L.T, xa), 0) + '.');
         } else {
           const r = rispNumero(L, S);
-          t = ok ? 'Previsione giusta: la legge dice ' + num(r, r % 1 ? 1 : 0) + ', nella scatola ne restano ' + n + '.'
+          t = ok ? 'Previsione giusta: la legge dice ' + num(r, L.sopravv ? 1 : 0) + ', nella scatola ne restano ' + n + '.'
             : 'Nella scatola ne restano ' + n + (L.sopravv ? ' dei ' + S : '') + '; tu ne avevi previsti ' + xa + '.';
           if (L.sopravv) daRifare = !ok;
         }
@@ -727,7 +727,7 @@
         let t;
         if (n === 1) t = rimasti(camp, tNow) ? 'Il nucleo è ancora lì: quando decadrà non lo sa nessuno.' : 'Il nucleo è decaduto a ' + num(camp.tau[0], 1) + '\u00a0s. Un altro nucleo uguale avrebbe scelto un altro istante.';
         else {
-          t = 'A t = T ne restavano ' + rimasti(camp, L.T) + ' su ' + n + '; la legge ne dice ' + num(n / 2, n % 2 ? 1 : 0) + '.';
+          t = 'A t = T ne restavano ' + rimasti(camp, L.T) + ' su ' + n + '; la legge ne dice ' + num(n / 2, 0) + '.';
           if (n <= 16) t += ' Con pochi nuclei il caso pesa di più.';
         }
         msg.textContent = t; msg.className = 'lab-messaggio';

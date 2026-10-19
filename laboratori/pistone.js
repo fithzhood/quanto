@@ -145,10 +145,10 @@
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  function texM3(litri) { let s = (litri / 1000).toFixed(5).replace(/0+$/, ''); if (/\.$/.test(s)) s += '0'; return s.replace('.', '{,}'); }   /* 12,5 L → 0{,}0125 */
+  function texM3(litri) { return texNum(litri / 1000, 4); }   /* V a passi di 0,5 L: in m³ sempre quattro decimali, 12,5 L → 0{,}0125, 10 L → 0{,}0100 */
   function texMigliaia(v) { const s = String(Math.round(v)); return s.length > 4 ? s.replace(/\B(?=(\d{3})+$)/g, '\\,') : s; }               /* 100000 → 100\,000 */
-  const numP = p => p >= 1000 ? num(p, 0) : num(p, 1);
-  const numVal = (v, d) => Math.abs(v - Math.round(v)) < 1e-9 ? num(v, 0) : num(v, d);   /* 500 kPa, ma 199,4 kPa */
+  const numP = p => num(p, 1);   /* la pressione in kPa: sempre un decimale, anche sopra i 1000 */
+  const numVal = (v, d) => num(v, d);   /* come il manometro: 500,0 kPa e 199,4 kPa */
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };
@@ -309,7 +309,7 @@
           const y = PYV(oV.val);
           gFondo.appendChild(el('line', { x1: x0 - 10, y1: y, x2: x1 + 4, y2: y, stroke: 'var(--no)', 'stroke-width': 2, 'stroke-dasharray': '6 4' }));
           gFondo.appendChild(el('path', { d: `M${x1 + 4} ${y} l9 -5 v10 z`, fill: 'var(--no)' }));
-          gFondo.appendChild(el('text', { x: x1 - 4, y: y - 5, 'text-anchor': 'end', fill: 'var(--no)', style: 'font: 700 12px var(--font)', 'paint-order': 'stroke', stroke: 'var(--sup)', 'stroke-width': 3, 'stroke-linejoin': 'round' }, 'tacca ' + num(oV.val, oV.val % 1 ? 1 : 0) + '\u00a0L'));
+          gFondo.appendChild(el('text', { x: x1 - 4, y: y - 5, 'text-anchor': 'end', fill: 'var(--no)', style: 'font: 700 12px var(--font)', 'paint-order': 'stroke', stroke: 'var(--sup)', 'stroke-width': 3, 'stroke-linejoin': 'round' }, 'tacca ' + num(oV.val, 1) + '\u00a0L'));
         }
         /* il termometro del bagno, a sinistra del righello: kelvin e, sotto, gradi Celsius */
         const tx = Math.max(24, x0 - 58), tAlto = yF - (yF - 50) * 0.62, tBasso = yF + 6;
@@ -502,7 +502,7 @@
         if (tipo === 'p') {
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex('p \\cdot V = n \\cdot R \\cdot T') + '</span>');
           pezzi.push(numerico('p = \\dfrac{' + nRT + '}{' + texM3(q.V) + '}\\,\\text{Pa}'));
-          pezzi.push(ris('\\approx ' + (s.p >= 1000 ? texNum(s.p, 0) : texNum(s.p, 1)) + '\\,\\text{kPa}'));
+          pezzi.push(ris('\\approx ' + texNum(s.p, 1) + '\\,\\text{kPa}'));
         } else if (tipo === 'V' || tipo === 'Vv') {
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex('p \\cdot V = n \\cdot R \\cdot T') + '</span>');
           pezzi.push(numerico('V = \\dfrac{' + nRT + '}{' + texMigliaia(q.c * 1000) + '}\\,\\text{m}^3'));

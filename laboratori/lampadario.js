@@ -167,7 +167,7 @@
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  function texV(v) { return Math.abs(v - Math.round(v)) > 1e-9 ? texNum(v, 1) : String(Math.round(v)); }
+  function texV(v) { return texNum(v, 0); }   /* il peso scelto, a passi di 5 N: sempre intero (con la massa il conto è a parte) */
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };
@@ -371,7 +371,7 @@
         /* il peso è noto da subito; le tensioni solo a lampadario appeso */
         const K = S.K, P = c.P;
         freccia(gForze, N[0], N[1], N[0], N[1] + P * K, 'var(--s2)', 3.2);
-        etichetta(gForze, N[0] + 9, N[1] + P * K - 2, 'P', '', L.massa && !lette ? '' : num(P, P % 1 ? 1 : 0) + '\u00a0N', 'var(--s2)');
+        etichetta(gForze, N[0] + 9, N[1] + P * K - 2, 'P', '', L.massa && !lette ? '' : num(P, L.massa ? 1 : 0) + '\u00a0N', 'var(--s2)');
         if (!lette) return;
         const u1 = [-(N[0] - PX(c.A[0])), -(N[1] - PY(c.A[1]))], u2 = [PX(c.B[0]) - N[0], PY(c.B[1]) - N[1]];
         const n1 = Math.hypot(u1[0], u1[1]), n2 = Math.hypot(u2[0], u2[1]);

@@ -37,7 +37,9 @@
     .lab-circuiti .lab-parametri { max-width: 520px; gap: 6px 4px; }
     .lab-circuiti .lab-param { gap: 2px; min-width: 0; }
     .lab-circuiti .lab-param .nome { min-width: 1.2em; }
-    .lab-circuiti .lab-param output { min-width: 2.5em; }
+    .lab-circuiti .lab-param output { min-width: 2.5em; text-align: center; }
+    .lab-circuiti .lab-param[data-p="E"] output { min-width: 4.2em; }   /* larga quanto «12,0 V» */
+    .lab-circuiti .lab-param[data-p="R"] output { min-width: 3.4em; }   /* larga quanto «48 Ω» */
     .lab-circuiti .conta { position: absolute; right: 10px; top: 8px; margin: 0; font-size: .8rem; white-space: nowrap; pointer-events: none; }
     .lab-circuiti .vinto { display: inline-block; animation: lab-circuiti-pop .45s cubic-bezier(.34,1.56,.64,1); }
     @keyframes lab-circuiti-pop { from { transform: scale(.75); opacity: 0 } to { transform: none; opacity: 1 } }
@@ -231,7 +233,9 @@
 
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
-  function corto(v, d) { let s = num(v, d); if (s.indexOf(',') >= 0) s = s.replace(/0+$/, '').replace(/,$/, ''); return s === '−0' ? '0' : s; }   /* 0,75 · 3 · 1,33 */
+  /* decimali fissi per grandezza, senza togliere gli zeri finali: R intere, ℰ a passi di 1,5 V (un decimale nel Libero),
+     P con due decimali (3,00 · 0,75 · 1,33), I con tre, V con due; niente «−0» */
+  function corto(v, d) { const s = num(v, d); return /^−0(,0+)?$/.test(s) ? s.slice(1) : s; }
   function texN(v, d) { return corto(v, d).replace(',', '{,}').replace('−', '-'); }
 
   const NS = 'http://www.w3.org/2000/svg';
@@ -399,10 +403,10 @@
         const cx = L.m[0] + L.n[0] * lato * (fianco ? 0.35 : 0.5) * U, cy = L.m[1] + L.n[1] * lato * 0.5 * U;
         const righe = [], f1 = morsa(U * 0.24, 14, 19).toFixed(1), f2 = morsa(U * 0.2, 12, 16);   /* le scritte crescono con la griglia */
         if (c.tipo === 'lamp') {
-          righe.push([[c.id, 'font: 700 ' + f1 + 'px var(--font)', 'var(--testo)'], [' ' + corto(c.R, 1) + '\u00a0Ω', 'font: ' + f2.toFixed(1) + 'px var(--font)', 'var(--testo2)']]);
-          if (dati) righe.push([[corto(dati.P, dati.P >= 10 ? 1 : 2) + '\u00a0W', 'font: 700 ' + f2.toFixed(1) + 'px var(--font)', 'var(--s3)']]);
+          righe.push([[c.id, 'font: 700 ' + f1 + 'px var(--font)', 'var(--testo)'], [' ' + corto(c.R, 0) + '\u00a0Ω', 'font: ' + f2.toFixed(1) + 'px var(--font)', 'var(--testo2)']]);
+          if (dati) righe.push([[corto(dati.P, 2) + '\u00a0W', 'font: 700 ' + f2.toFixed(1) + 'px var(--font)', 'var(--s3)']]);
         } else {
-          righe.push([['ℰ = ' + corto(c.E, 1) + '\u00a0V', 'font: 600 ' + f2.toFixed(1) + 'px var(--font)', 'var(--s2)']]);
+          righe.push([['ℰ = ' + corto(c.E, libero ? 1 : 0) + '\u00a0V', 'font: 600 ' + f2.toFixed(1) + 'px var(--font)', 'var(--s2)']]);
           if (dati) righe.push([[dati.corto ? 'corto!' : corto(Math.abs(dati.I), 3) + '\u00a0A', 'font: 700 ' + f2.toFixed(1) + 'px var(--font)', dati.corto ? 'var(--no)' : 'var(--s4)']]);
         }
         const hr = f2 * 1.25, y0 = cy - (righe.length - 1) * hr / 2 + f2 * 0.37, fatti = [];
@@ -472,7 +476,7 @@
           if (acceso && ris && !ris.corto) {
             const P = ris.lampade[id].P, ok = vicino(P, t);
             cls += ok ? ' ok' : ' no';
-            mis = ok ? ' <span class="mis">✓</span>' : ' <span class="mis">ora ' + corto(P, P >= 10 ? 1 : 2) + '&nbsp;W</span>';
+            mis = ok ? ' <span class="mis">✓</span>' : ' <span class="mis">ora ' + corto(P, 2) + '&nbsp;W</span>';
           }
           return '<span class="' + cls + '" data-id="' + id + '"><i class="lamp" style="background: rgba(255, 196, 30, ' + morsa(luce(t), 0.1, 1).toFixed(2) + ')"></i><b>' + id + '</b> ' + corto(t, 2) + '&nbsp;W' + mis + '</span>';
         }).join('');
@@ -489,7 +493,7 @@
         const c = lampada(sel) || st.comp.filter(x => x.tipo === 'lamp')[0];
         if (!c) { formulaEl.innerHTML = ''; adattaFormula(); return; }
         sel = c.id;
-        const nome = 'P_{\\mathrm{' + c.id + '}}', R = texN(c.R, 1) + '\\,\\Omega';
+        const nome = 'P_{\\mathrm{' + c.id + '}}', R = texN(c.R, 0) + '\\,\\Omega';
         const gI = s => '\\htmlClass{gI}{' + s + '}', gV = s => '\\htmlClass{gV}{' + s + '}';
         const numerico = (n, s) => '<span class="pezzo"><span class="nome-stretto">' + ctx.tex(n) + ' </span>' + ctx.tex(s) + '</span>';
         const pezzi = ['<span class="pezzo simbolo">' + ctx.tex(nome + ' = ' + gV('V') + ' \\cdot ' + gI('I') + ' = R \\cdot ' + gI('I') + '^2') + '</span>'];
@@ -499,7 +503,7 @@
           const Is = texN(d.I, 3) + '\\,\\text{A}', Vs = texN(d.V, 2) + '\\,\\text{V}';
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex('= ' + gV(Vs) + ' \\cdot ' + gI(Is)) + '</span>');
           pezzi.push(numerico(nome, '= ' + R + ' \\cdot (' + gI(Is) + ')^2'));
-          pezzi.push('<span class="pezzo esito">' + ctx.tex('\\approx ' + texN(d.P, d.P >= 10 ? 1 : 2) + '\\,\\text{W}') + '</span>');
+          pezzi.push('<span class="pezzo esito">' + ctx.tex('\\approx ' + texN(d.P, 2) + '\\,\\text{W}') + '</span>');
         } else {
           pezzi.push(numerico(nome, '= ' + R + ' \\cdot ' + gI('I') + '^2'));
           pezzi.push('<span class="pezzo ignoto">' + ctx.tex('= \\ ?') + '</span>');
@@ -511,9 +515,9 @@
         if (!libero) return;
         const pile = st.comp.filter(c => c.tipo === 'pila'), lamp = st.comp.filter(c => c.tipo === 'lamp'), c = lampada(sel) || lamp[0];
         box.np.querySelector('output').textContent = pile.length;
-        box.E.querySelector('output').textContent = corto(pile[0].E, 1) + '\u00a0V';
+        box.E.querySelector('output').textContent = corto(pile[0].E, libero ? 1 : 0) + '\u00a0V';
         box.nl.querySelector('output').textContent = lamp.length;
-        box.R.querySelector('output').textContent = corto(c.R, 1) + '\u00a0Ω';
+        box.R.querySelector('output').textContent = corto(c.R, 0) + '\u00a0Ω';
         box.R.querySelector('.nome').innerHTML = ctx.tex('R_{\\mathrm{' + c.id + '}}');
         const lim = { np: [pile.length <= 1, pile.length >= 3], nl: [lamp.length <= 1, lamp.length >= 4], E: [pile[0].E <= VALORI_E[0], pile[0].E >= VALORI_E[VALORI_E.length - 1]], R: [c.R <= VALORI_R[0], c.R >= VALORI_R[VALORI_R.length - 1]] };
         Object.keys(box).forEach(k => box[k].querySelectorAll('button').forEach(bt => { bt.disabled = lim[k][+bt.dataset.d > 0 ? 1 : 0]; }));

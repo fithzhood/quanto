@@ -176,8 +176,8 @@
   }
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  function texV(v) { return v % 1 ? texNum(v, 1) : String(v); }   /* 14 oppure 14{,}5 */
-  function texQuad(v) { return v % 1 ? '(' + texNum(v, 1) + ')^2' : v + '^2'; }
+  function texV(v) { return texNum(v, 1); }   /* v₀ a passi di 0,5 m/s: sempre un decimale, 14{,}0 oppure 14{,}5 */
+  function texQuad(v) { return '(' + texNum(v, 1) + ')^2'; }
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };
@@ -367,7 +367,7 @@
         const etichetta = el('text', { x: tx, y: Math.max(16, ty), fill: 'var(--s1)', style: 'font: 700 14px var(--font)', 'paint-order': 'stroke', stroke: 'var(--sup)', 'stroke-width': 3.5, 'stroke-linejoin': 'round' });
         etichetta.appendChild(document.createTextNode('v'));
         const pedice = el('tspan', { 'baseline-shift': 'sub', style: 'font-size: 11px' }, '0'); etichetta.appendChild(pedice);
-        etichetta.appendChild(el('tspan', {}, ' ' + num(p.v, p.v % 1 ? 1 : 0) + '\u00a0m/s'));
+        etichetta.appendChild(el('tspan', {}, ' ' + num(p.v, 1) + '\u00a0m/s'));
         gFreccia.appendChild(etichetta);
         gFreccia.appendChild(el('text', { x: x0 + 32, y: y0 - 6, fill: 'var(--testo2)', style: 'font: 600 13px var(--font)', 'paint-order': 'stroke', stroke: 'var(--sup)', 'stroke-width': 3, 'stroke-linejoin': 'round' }, p.a + '°'));
         if (L.h) gFreccia.appendChild(el('text', { x: 5, y: y0 + 20, fill: 'var(--testo)', style: 'font: 600 13px var(--font)' }, num(L.h, 1) + '\u00a0m'));

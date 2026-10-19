@@ -433,10 +433,10 @@
         const et = P(x1 + 0.9, (Y_F0 + Y_F1) / 2);
         if (S.vert) {
           const c = P(x1 + 0.6, Y_F1 - 1);
-          scritta(gTesti, c[0] + 2, c[1] + 14, ['E = ' + num(p.E, p.E % 1 ? 1 : 0) + ' kV/m'], { 'text-anchor': 'end', fill: 'var(--testo2)' });
+          scritta(gTesti, c[0] + 2, c[1] + 14, ['E = ' + num(p.E, 1) + ' kV/m'], { 'text-anchor': 'end', fill: 'var(--testo2)' });
           scritta(gTesti, c[0] + 2, c[1] + 31, ['B', ['1', 'sub'], ' = ' + num(B1, 2) + '\u00a0T'], { 'text-anchor': 'end', fill: 'var(--s3)' });
         } else {
-          scritta(gTesti, et[0] + 4, et[1] - 4, ['E = ' + num(p.E, p.E % 1 ? 1 : 0) + ' kV/m'], { 'text-anchor': 'start', fill: 'var(--testo2)' });
+          scritta(gTesti, et[0] + 4, et[1] - 4, ['E = ' + num(p.E, 1) + ' kV/m'], { 'text-anchor': 'start', fill: 'var(--testo2)' });
           scritta(gTesti, et[0] + 4, et[1] + 14, ['B', ['1', 'sub'], ' = ' + num(B1, 2) + '\u00a0T (⊗)'], { 'text-anchor': 'start', fill: 'var(--s3)' });
         }
         const lab = P(x0 - 0.6, (Y_F0 + Y_F1) / 2);
@@ -493,7 +493,7 @@
         const L = liv(), filtro = !!L.filtro, unico = filtro && L.filtro.unico;
         box.ione.querySelector('output').innerHTML = ioneHTML(IONI[L.ioni[0]]);
         box.v.querySelector('output').innerHTML = num(p.v, 1) + '·10<sup>5</sup>&nbsp;<small>m/s</small>';   /* come nella scena e nella formula */
-        box.E.querySelector('output').innerHTML = num(p.E, p.E % 1 ? 1 : 0) + '&nbsp;<small>kV/m</small>';
+        box.E.querySelector('output').innerHTML = num(p.E, 1) + '&nbsp;<small>kV/m</small>';
         box.B1.querySelector('output').innerHTML = num(p.B1, 2) + '&nbsp;<small>T</small>';
         box.B.querySelector('output').innerHTML = num(p.B, 2) + '&nbsp;<small>T</small>';
         b.verso.textContent = p.s > 0 ? '⊙ esce' : '⊗ entra';

@@ -240,10 +240,10 @@
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−').replace(/^−(0,0*)$/, '$1'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}').replace(/^-(0(\{,\}0*)?)$/, '$1'); }
-  const tPos = v => v % 1 ? texNum(v, 1) : String(v);
+  const tPos = v => texNum(v, 1);   /* masse e velocità a passi di 0,5: sempre un decimale (2{,}0, mai 2) */
   const tFat = v => v < 0 ? '(-' + tPos(-v) + ')' : tPos(v);                 /* un fattore: i negativi fra parentesi */
   const uguale = (v, d) => Math.abs(v * Math.pow(10, d) - Math.round(v * Math.pow(10, d))) < 1e-7 ? '= ' : '\\approx ';
-  const nV = v => (v % 1 ? num(v, 1) : num(v, 0));
+  const nV = v => num(v, 1);   /* i valori dei comandi, a passi di 0,5: sempre un decimale */
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };
@@ -414,7 +414,7 @@
         if (vicino) { testo.setAttribute('text-anchor', chi === 'A' ? 'end' : 'start'); testo.setAttribute('x', cx + (chi === 'A' ? 8 : -8)); }
         testo.appendChild(document.createTextNode('v'));
         testo.appendChild(el('tspan', { 'baseline-shift': 'sub', style: 'font-size: ' + Math.round(10 * S.z) + 'px' }, chi));
-        testo.appendChild(el('tspan', {}, ' ' + num(v, Math.abs(v * 2 - Math.round(v * 2)) < 1e-6 ? 1 : 2).replace(',0', '') + '\u00a0m/s'));
+        testo.appendChild(el('tspan', {}, ' ' + num(v, 2) + '\u00a0m/s'));
         gFrecce.appendChild(testo);
       }
 
@@ -552,8 +552,7 @@
         } else {   /* libero */
           pezzi.push(simbolo('p_{tot} = m_A \\cdot v_A + m_B \\cdot v_B'));
           pezzi.push(numerico('p_{tot} = ' + m(p.mA) + ' \\cdot ' + f(p.vA) + ' + ' + m(p.mB) + ' \\cdot ' + f(p.vB)));
-          const dp = u.p0 % 1 === 0 ? 0 : (u.p0 * 2 % 1 === 0 ? 1 : 2);   /* masse e velocità a passi di 0,5: p è esatto con al più due decimali */
-          pezzi.push(ris('= ' + texNum(u.p0, dp) + '\\,\\text{kg} \\cdot \\text{m/s}'));
+          pezzi.push(ris('= ' + texNum(u.p0, 2) + '\\,\\text{kg} \\cdot \\text{m/s}'));   /* masse e velocità a passi di 0,5: p è esatto con due decimali */
         }
         formulaEl.innerHTML = pezzi.join('');
       }

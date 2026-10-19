@@ -183,7 +183,7 @@
   const AIUTO_LIBERO = 'In modalità libera non c\'è obiettivo. Scegli l\'acqua nelle casse, la densità d dell\'acqua in alto e d₂ di quella sotto i 10\u00a0m (uguali: niente strati). Puoi trascinare il sottomarino in su e in giù prima di Via: parte da dove lo lasci. «Casuale» propone casse e strati a caso, «Ricomincia» lo riporta in superficie.';
   const num = (v, d) => (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', ',').replace('-', '−');
   const texNum = (v, d) => (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}');
-  const texK = v => Math.abs(v - Math.round(v)) < 1e-6 ? String(Math.round(v)) : texNum(v, 1);
+  const texK = v => texNum(v, 1);   /* massa delle casse (passi di 10 L, cioè 10 o 10,25 kg) e volume: sempre un decimale */
 
   function verdetto(L, f) {
     const s = L.scopo;

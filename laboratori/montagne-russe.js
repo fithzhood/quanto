@@ -264,9 +264,9 @@
 
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
-  function numV(v) { return v % 1 ? num(v, 1) : String(v); }               /* 20 oppure 18,5 */
+  function numV(v) { return num(v, 1); }               /* quote e v₀ a passi di 0,5: sempre un decimale, 20,0 oppure 18,5 */
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  function texV(v) { return Math.abs(v % 1) > 1e-9 ? texNum(v, 1) : String(Math.round(v)); }
+  function texV(v) { return texNum(v, 1); }
   function texJ(v) {   /* joule interi, con lo spazio fine delle migliaia: 98\,000 */
     const n = Math.round(Math.abs(v)), s = String(n), parti = [];
     for (let i = s.length; i > 0; i -= 3) parti.unshift(s.slice(Math.max(0, i - 3), i));

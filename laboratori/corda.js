@@ -50,6 +50,15 @@
     .lab-corda .lab-messaggio { min-height: 3.2em; }   /* due righe riservate al messaggio */
     @container lab (max-width: 420px) { .lab-corda .consegna { min-height: 4.2em; } .lab-corda .formula { height: 5.6rem; } .lab-corda.in-libero .lab-messaggio { min-height: 3.2em; } }
     .lab-corda .lab-param output { width: 6.8ch; min-width: 6.8ch; text-align: center; }   /* larga quanto «149,5 Hz»: le cifre non spostano i pulsanti */
+    /* in verticale i quattro comandi del Libero stanno su due colonne (sul tablet la griglia ne faceva quattro, e uscivano dal pannello) */
+    @container lab (max-aspect-ratio: 5 / 4) { .lab-corda .lab-parametri:not(.uno) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* sul telefono, nel Libero i quattro comandi stanno su due colonne: pulsanti e caselle un po' più stretti, così il «+» di destra non esce dal bordo */
+    @container lab (max-width: 420px) {
+      .lab-corda .lab-parametri { column-gap: 4px; }
+      .lab-corda .lab-param .nome { min-width: 1em; }
+      .lab-corda .lab-param .btn { min-width: 32px; padding: 0 4px; }
+      .lab-corda .lab-param output { width: 6.7ch; min-width: 6.7ch; font-size: .9em; }   /* ci sta «150,0 Hz» */
+    }
     .lab-corda .lab-barra .b-ric { display: inline-grid; justify-items: center; align-content: center; gap: 0; }   /* larga già quanto l'etichetta più lunga: vincere non sposta gli altri pulsanti */
     .lab-corda .lab-barra .b-ric::after { content: 'Ricomincia dal primo'; content: 'Ricomincia dal primo' / ''; height: 0; overflow: hidden; visibility: hidden; }
     /* pannello alto uguale in ogni livello e nel Libero (il caso più alto): pallini, consegna e comandi stanno in alto,
@@ -158,10 +167,9 @@
 
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
-  const numA = v => num(v, Math.abs(v - Math.round(v)) < 1e-9 ? 0 : (Math.abs(v * 10 - Math.round(v * 10)) < 1e-9 ? 1 : 2));   /* 20, 1,2, 1,05 */
+  /* decimali fissi per grandezza, dal passo del comando: f a 0,5 Hz (un decimale), F a 1 N e μ in g/m (interi), L a 5 cm (due decimali) */
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  const texA = v => numA(v).replace(',', '{,}');
-  const texMu = mu => (mu / 1000).toFixed(mu % 1 || mu < 1 ? 4 : 3).replace('.', '{,}');   /* 10 g/m → 0{,}010 */
+  const texMu = mu => texNum(mu / 1000, 3);   /* μ intera in g/m: in kg/m sempre tre decimali, 10 g/m → 0{,}010 */
   const NB = ' ';
 
   const NS = 'http://www.w3.org/2000/svg';
@@ -262,21 +270,21 @@
           const x = k / 20, X = PX(x), lungo = Math.abs(x / passo - Math.round(x / passo)) < 1e-6;
           if (k % 2 && S.U * 0.05 < 7) continue;
           gFondo.appendChild(el('line', { x1: X, y1: yr - 4, x2: X, y2: yr + (lungo ? 5 : 1), stroke: 'var(--testo)', 'stroke-width': lungo ? 1.4 : 1, opacity: .55 }));
-          if (lungo && X < S.w - 30) gFondo.appendChild(el('text', { x: X, y: yr + 19, 'text-anchor': 'middle', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, numA(x)));
+          if (lungo && X < S.w - 30) gFondo.appendChild(el('text', { x: X, y: yr + 19, 'text-anchor': 'middle', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, num(x, passo === 0.25 ? 2 : 1)));
         }
         gFondo.appendChild(el('text', { x: S.w - 6, y: yr + 19, 'text-anchor': 'end', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, 'm'));
         if (L.scopo.fermo != null) gFondo.appendChild(el('line', { x1: PX(L.scopo.fermo), y1: yr - 6, x2: PX(L.scopo.fermo), y2: yr + 6, stroke: 'var(--no)', 'stroke-width': 3 }));
         /* L e μ, scritti sopra il righello a metà corda */
         const t = el('text', { x: (x0 + xL) / 2, y: yr - 12, 'text-anchor': 'middle', fill: 'var(--testo2)', style: 'font: 600 13px var(--font)', 'paint-order': 'stroke', stroke: 'var(--sup)', 'stroke-width': 4, 'stroke-linejoin': 'round' });
-        t.appendChild(el('tspan', { 'font-style': 'italic' }, 'L')); t.appendChild(el('tspan', {}, ' = ' + numA(p.L) + NB + 'm' + NB + NB + NB + NB));
-        t.appendChild(el('tspan', { 'font-style': 'italic' }, 'μ')); t.appendChild(el('tspan', {}, ' = ' + (nascosto('mu') ? '?' : numA(p.mu) + NB + 'g/m')));
+        t.appendChild(el('tspan', { 'font-style': 'italic' }, 'L')); t.appendChild(el('tspan', {}, ' = ' + num(p.L, 2) + NB + 'm' + NB + NB + NB + NB));
+        t.appendChild(el('tspan', { 'font-style': 'italic' }, 'μ')); t.appendChild(el('tspan', {}, ' = ' + (nascosto('mu') ? '?' : num(p.mu, 0) + NB + 'g/m')));
         gFondo.appendChild(t);
         /* il vibratore: una scatola sul suo piede, con il display della frequenza */
         const bx = x0 - 64, bw = 54, bh = 60;
         gFondo.appendChild(el('rect', { x: bx + bw / 2 - 5, y: yc + bh / 2, width: 10, height: yr - 4 - yc - bh / 2, fill: 'var(--testo2)', opacity: .55 }));
         gPezzi.appendChild(el('rect', { x: bx, y: yc - bh / 2, width: bw, height: bh, rx: 8, fill: 'var(--sup)', stroke: 'var(--testo2)', 'stroke-width': 2, class: 'presa-f' }));
         gPezzi.appendChild(el('rect', { x: bx + 5, y: yc - 12, width: bw - 10, height: 24, rx: 4, fill: '#10221f' }));
-        gPezzi.appendChild(el('text', { x: bx + bw / 2, y: yc + 5, 'text-anchor': 'middle', fill: '#7fe3c4', style: 'font: 700 13px var(--font)' }, numA(p.f)));
+        gPezzi.appendChild(el('text', { x: bx + bw / 2, y: yc + 5, 'text-anchor': 'middle', fill: '#7fe3c4', style: 'font: 700 13px var(--font)' }, num(p.f, 1)));
         gPezzi.appendChild(el('text', { x: bx + bw / 2, y: yc + bh / 2 - 6, 'text-anchor': 'middle', fill: 'var(--testo2)', style: 'font: 600 12px var(--font)' }, 'Hz'));
         gPezzi.appendChild(el('circle', { cx: bx + bw - 9, cy: yc - bh / 2 + 9, r: 4, fill: acceso ? 'var(--ok)' : 'var(--bordo2)' }));
         /* la carrucola, il filo che scende e il peso */
@@ -287,7 +295,7 @@
         gPezzi.appendChild(el('circle', { cx: xL, cy: yc + RP, r: 2.5, fill: 'var(--testo2)' }));
         gPezzi.appendChild(el('rect', { x: xL + RP - s / 2, y: yp, width: s, height: s, rx: 3, fill: 'var(--testo2)', opacity: .85, class: 'presa-F' }));
         const tf = el('text', { x: xL + RP - s / 2 - 6, y: yp + s / 2 + 5, 'text-anchor': 'end', fill: 'var(--s2)', style: 'font: 700 13px var(--font)', 'paint-order': 'stroke', stroke: 'var(--sup)', 'stroke-width': 4, 'stroke-linejoin': 'round' });
-        tf.appendChild(el('tspan', { 'font-style': 'italic' }, 'F')); tf.appendChild(el('tspan', {}, ' = ' + (nascosto('F') ? '?' : numA(p.F) + NB + 'N')));
+        tf.appendChild(el('tspan', { 'font-style': 'italic' }, 'F')); tf.appendChild(el('tspan', {}, ' = ' + (nascosto('F') ? '?' : num(p.F, 0) + NB + 'N')));
         gPezzi.appendChild(tf);
         if (L.scopo.fermo != null) gCorda.appendChild(puntoRosso); else if (puntoRosso.parentNode) puntoRosso.parentNode.removeChild(puntoRosso);
       }
@@ -368,7 +376,7 @@
       function ridisegnaTutto() { geometria(); disegnaFondo(); disegnaCorda(); disegnaSegni(); scriviRallenta(); }
 
       /* ---------------- pannello ---------------- */
-      const testoParam = { f: () => numA(p.f) + NB + 'Hz', F: () => nascosto('F') ? '?' : numA(p.F) + NB + 'N', L: () => num(p.L, 2) + NB + 'm', mu: () => nascosto('mu') ? '?' : numA(p.mu) + NB + 'g/m' };
+      const testoParam = { f: () => num(p.f, 1) + NB + 'Hz', F: () => nascosto('F') ? '?' : num(p.F, 0) + NB + 'N', L: () => num(p.L, 2) + NB + 'm', mu: () => nascosto('mu') ? '?' : num(p.mu, 0) + NB + 'g/m' };
       function limiti(k) { return k === 'mu' ? [MU[0], MU[MU.length - 1]] : LIM[k]; }
       function aggiornaParametri() {
         const L = liv();
@@ -396,18 +404,18 @@
         if (L.formula === 'mezze' || L.formula === 'libero') {
           /* una riga per formula, ognuna tutta intera (col risultato dentro): sul telefono la forma simbolica sparisce */
           const vista = L.v === 'nota' || L.v === 'sempre' || fatto;
-          const vNum = texNum(c.v, Math.abs(c.v - Math.round(c.v)) < 0.005 ? 0 : 1);
+          const vNum = texNum(c.v, 1);
           const fine = (vis, s) => vis ? ' <span class="esito">' + ctx.tex(s) + '</span>' : ' <span class="ignoto">' + ctx.tex('= \\ ?') + '</span>';
           const riga = (nome, simbolo, numeri, vis, esito) => '<span class="pezzo"><span class="nome-stretto">' + ctx.tex(nome + ' =') + ' </span><span class="simbolo">' + ctx.tex(nome + ' = ' + simbolo + ' =') + ' </span>' + ctx.tex(numeri) + fine(vis, esito) + '</span>';
-          if (L.v !== 'nota') pezzi.push(riga('v', '\\sqrt{\\dfrac{F}{\\mu}}', '\\sqrt{\\dfrac{' + texA(p.F) + '}{' + texMu(p.mu) + '}}\\,\\text{m/s}', vista, '= ' + vNum + '\\,\\text{m/s}'));
-          pezzi.push(riga('\\dfrac{L}{\\lambda/2}', '\\dfrac{2 \\cdot L \\cdot f}{v}', '\\dfrac{2 \\cdot ' + texA(p.L) + ' \\cdot ' + texA(p.f) + '}{' + (vista ? vNum : 'v') + '}', fatto, '\\approx ' + texNum(c.mezze, 2)));
+          if (L.v !== 'nota') pezzi.push(riga('v', '\\sqrt{\\dfrac{F}{\\mu}}', '\\sqrt{\\dfrac{' + texNum(p.F, 0) + '}{' + texMu(p.mu) + '}}\\,\\text{m/s}', vista, '= ' + vNum + '\\,\\text{m/s}'));
+          pezzi.push(riga('\\dfrac{L}{\\lambda/2}', '\\dfrac{2 \\cdot L \\cdot f}{v}', '\\dfrac{2 \\cdot ' + texNum(p.L, 2) + ' \\cdot ' + texNum(p.f, 1) + '}{' + (vista ? vNum : 'v') + '}', fatto, '\\approx ' + texNum(c.mezze, 2)));
         } else if (L.formula === 'armoniche') {
           pezzi.push('<span class="pezzo">' + ctx.tex('f_n = n \\cdot f_1') + '</span>');
-          pezzi.push(finito ? '<span class="pezzo esito">' + ctx.tex('f_1 = ' + texA(c.f1) + '\\,\\text{Hz}') + '</span>' : '<span class="pezzo ignoto">' + ctx.tex('f_1 = \\ ?') + '</span>');
+          pezzi.push(finito ? '<span class="pezzo esito">' + ctx.tex('f_1 = ' + texNum(c.f1, 1) + '\\,\\text{Hz}') + '</span>' : '<span class="pezzo ignoto">' + ctx.tex('f_1 = \\ ?') + '</span>');
         } else if (L.formula === 'rapporto') {
           const r = Math.sqrt(p.F / 16);
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex('v = \\sqrt{\\dfrac{F}{\\mu}}') + '</span>');
-          pezzi.push('<span class="pezzo">' + ctx.tex('\\dfrac{f_1}{20\\,\\text{Hz}} = \\sqrt{\\dfrac{F}{16\\,\\text{N}}} = \\sqrt{\\dfrac{' + texA(p.F) + '}{16}}') + '</span>');
+          pezzi.push('<span class="pezzo">' + ctx.tex('\\dfrac{f_1}{20\\,\\text{Hz}} = \\sqrt{\\dfrac{F}{16\\,\\text{N}}} = \\sqrt{\\dfrac{' + texNum(p.F, 0) + '}{16}}') + '</span>');
           pezzi.push(ris('\\approx ' + texNum(r, 2) + ',\\ \\ f_1 \\approx ' + texNum(20 * r, 1) + '\\,\\text{Hz}'));
         }
         formulaEl.innerHTML = pezzi.join(''); adattaFormula();
@@ -494,7 +502,7 @@
       /* ---------------- modalità libera: nessun obiettivo, nessun verdetto ---------------- */
       function osserva() {
         if (!acceso) { msg.textContent = 'Vibratore spento.'; msg.className = 'lab-messaggio'; return; }
-        const c = corda(p), f1 = num(c.f1, c.f1 < 100 ? 1 : 0) + '&nbsp;Hz', F1 = '<i>f</i><sub>1</sub>';
+        const c = corda(p), f1 = num(c.f1, 1) + '&nbsp;Hz', F1 = '<i>f</i><sub>1</sub>';
         if (!c.risonanza) { msg.innerHTML = F1 + ' = ' + f1 + ': <i>f</i> non ne è un multiplo, la corda trema appena.'; msg.className = 'lab-messaggio'; return; }
         msg.innerHTML = (c.n === 1 ? 'Un ventre' : c.n + ' ventri') + ', <i>f</i> = ' + c.n + ' · ' + F1 + ' = ' + c.n + ' · ' + f1 + '.';
         msg.className = 'lab-messaggio';

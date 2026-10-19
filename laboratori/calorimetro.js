@@ -161,8 +161,10 @@
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return (s === '-0' || /^-0[.,]0*$/.test(s) ? s.slice(1) : s).replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); if (/^-0\.?0*$/.test(s)) s = s.slice(1); return s.replace('.', '{,}'); }
-  function texKg(g) { return String(+(g / 1000).toFixed(3)).replace('.', '{,}'); }   /* 320 g → 0{,}32 */
-  function texT(t) { return t < 0 ? '(' + texNum(t, t % 1 ? 1 : 0)+ ')' : texNum(t, t % 1 ? 1 : 0); }
+  /* decimali fissi: le masse vanno a passi di 10 g (in kg sempre due decimali: 0,40, mai 0,4),
+     le temperature dei comandi a passi di un grado (sempre intere) */
+  function texKg(g) { return texNum(g / 1000, 2); }   /* 320 g → 0{,}32, 400 g → 0{,}40 */
+  function texT(t) { return t < 0 ? '(' + texNum(t, 0) + ')' : texNum(t, 0); }
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };
@@ -429,7 +431,7 @@
         /* la lettura, in alto */
         gTermo.appendChild(el('text', Object.assign({ x: T.x + 6, y: T.y0 - 14, 'text-anchor': 'end', fill: 'var(--s2)', style: 'font: 700 15px var(--font)' }, ALONE), num(lettura, 1) + ' ' + U()));
       }
-      function numT(t) { return num(t, t % 1 ? 1 : 0) + ' ' + U(); }
+      function numT(t) { return num(t, 0) + ' ' + U(); }   /* le temperature dei comandi: a passi di un grado */
 
       /* il grafico temperatura–tempo: ogni corpo da dove parte fino a t_e */
       const NOMI = { calda: 'calda', fredda: 'fredda', blocco: 'blocco', tazza: 'tazza' };

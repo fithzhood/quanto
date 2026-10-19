@@ -176,7 +176,7 @@
   const VITTORIE = [
     L => { const p = pezzi(L)[0]; return 'Una retta che sale: velocità costante. ' + num(p.v0 * (p.t1 - p.t0), 0) + '\u00a0m in ' + num(p.t1 - p.t0, 0) + '\u00a0s fanno ' + num(p.v0, 0) + '\u00a0m/s.'; },
     () => 'Il tempo passa e la posizione no: linea piatta, velocità zero.',
-    L => { const P = pezzi(L); const v = x => num(x, 1).replace(/,0$/, ''); return 'Il tratto più ripido è il più veloce: prima ' + v(P[0].v0) + '\u00a0m/s, poi ' + v(P[1].v0) + '\u00a0m/s.'; },
+    L => { const P = pezzi(L); const v = x => num(x, 1); return 'Il tratto più ripido è il più veloce: prima ' + v(P[0].v0) + '\u00a0m/s, poi ' + v(P[1].v0) + '\u00a0m/s.'; },
     () => 'La linea scende: la posizione diminuisce e la velocità è negativa. Il tratto piatto era la sosta.',
     () => 'Sulla punta ti sei girato e sei tornato indietro: il grafico non è il disegno della strada.',
     L => { const p = pezzi(L)[0]; return 'Pendenza che cresce, velocità che cresce: alla fine andavi a ' + num(p.v0 + p.a * (p.t1 - p.t0), 0) + '\u00a0m/s.'; },
@@ -292,7 +292,7 @@
         gFondo.appendChild(el('rect', { x: G.gx0, y: G.gy0, width: G.gx1 - G.gx0, height: G.gy1 - G.gy0, fill: 'var(--sup)', opacity: .55, rx: 4 }));
         for (let v = ps; v <= pl + 1e-9; v += ps) {
           gFondo.appendChild(el('line', { x1: G.gx0, y1: YS(v), x2: G.gx1, y2: YS(v), stroke: 'var(--bordo)', 'stroke-width': 1 }));
-          gFondo.appendChild(el('text', { x: G.gx0 - 6, y: YS(v) + 4, 'text-anchor': 'end', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, num(v, v % 1 ? 1 : 0)));
+          gFondo.appendChild(el('text', { x: G.gx0 - 6, y: YS(v) + 4, 'text-anchor': 'end', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, num(v, ps % 1 ? 1 : 0)));   /* decimali fissi per tutta la scala */
         }
         for (let t = pt; t <= Tt + 1e-9; t += pt) {
           gFondo.appendChild(el('line', { x1: XT(t), y1: G.gy0, x2: XT(t), y2: G.gy1, stroke: 'var(--bordo)', 'stroke-width': 1 }));
@@ -327,7 +327,7 @@
         gPista.appendChild(el('line', { x1: G.px0 - 12, y1: y - 6, x2: G.px1 + 12, y2: y - 6, stroke: 'var(--testo)', 'stroke-width': 1.5, opacity: .5 }));
         for (let v = 0; v <= pl + 1e-9; v += pp) {
           gPista.appendChild(el('line', { x1: XS(v), y1: y - 6, x2: XS(v), y2: y + 4, stroke: 'var(--testo)', 'stroke-width': v === 0 ? 2.4 : 1.3, opacity: .65 }));
-          gPista.appendChild(el('text', { x: XS(v), y: y + 18, 'text-anchor': 'middle', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, num(v, v % 1 ? 1 : 0)));
+          gPista.appendChild(el('text', { x: XS(v), y: y + 18, 'text-anchor': 'middle', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, num(v, pp % 1 ? 1 : 0)));
         }
         gPista.appendChild(el('text', { x: G.px0 - 16, y: y + 18, 'text-anchor': 'end', fill: 'var(--testo2)', style: 'font: 12px var(--font)' }, 'm'));
       }
@@ -461,7 +461,7 @@
         const frazione = (nome, m) => {
           pezzi.push('<span class="pezzo simbolo">' + ctx.tex(nome + ' = \\dfrac{\\Delta s}{\\Delta t}') + '</span>');
           const ds = Math.abs(m.ds) < 0.005 ? 0 : m.ds, v = Math.abs(m.v) < 0.05 ? 0 : m.v;
-          pezzi.push('<span class="pezzo"><span class="nome-stretto">' + ctx.tex(nome) + ' </span>' + ctx.tex('= \\dfrac{' + texNum(ds, 2) + '\\,\\text{m}}{' + texNum(m.dt, m.dt % 1 > 0.04 && m.dt % 1 < 0.96 ? 1 : 0) + '\\,\\text{s}}') + '</span>');
+          pezzi.push('<span class="pezzo"><span class="nome-stretto">' + ctx.tex(nome) + ' </span>' + ctx.tex('= \\dfrac{' + texNum(ds, 2) + '\\,\\text{m}}{' + texNum(m.dt, 1) + '\\,\\text{s}}') + '</span>');
           pezzi.push('<span class="pezzo esito">' + ctx.tex('\\approx ' + texNum(v, 1) + '\\,\\text{m/s}') + '</span>');
         };
         if (fase === 'finito' && scrub != null) frazione('v', velocitaIn(scrub, 1));

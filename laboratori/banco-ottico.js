@@ -136,8 +136,8 @@
       const e = occhio(p);
       if (e.tipo === 'infinito') return { ok: false, e, testo: 'Candela nel fuoco: i raggi escono paralleli e l\'immagine va all\'infinito.' };
       if (e.tipo === 'reale') return { ok: false, e, testo: 'L\'occhio vede solo una macchia: i raggi escono convergenti.' };
-      if (Math.abs(e.G - L.G) <= 0.05 * L.G) return { ok: true, e, testo: 'Ingrandita ' + num(e.G, 1) + ' volte, dritta.' };
-      return { ok: false, e, testo: 'Dritta e ingrandita ' + num(e.G, e.G < 10 ? 2 : 0) + ' volte.' };
+      if (Math.abs(e.G - L.G) <= 0.05 * L.G) return { ok: true, e, testo: 'Ingrandita ' + num(e.G, 2) + ' volte, dritta.' };
+      return { ok: false, e, testo: 'Dritta e ingrandita ' + num(e.G, 2) + ' volte.' };
     }
     if (L.tipo === 'cannocchiale') {
       const e = cannocchiale(p);
@@ -183,9 +183,9 @@
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  function texN(v) { return Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : texNum(v, 1); }
+  function texN(v) { return texNum(v, 0); }   /* posizioni e focali a passi di 1 cm: sempre intere */
   function misura(b) { return b < 0.95 ? Math.max(1, Math.round(b * 10)) + '\u00a0mm' : num(b, 1) + '\u00a0cm'; }
-  function cm(v) { return num(v, Math.abs(v - Math.round(v)) < 1e-9 ? 0 : 1) + '\u00a0cm'; }
+  function cm(v) { return num(v, 0) + '\u00a0cm'; }   /* distanze fra pezzi a passi di 1 cm: sempre intere */
 
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };

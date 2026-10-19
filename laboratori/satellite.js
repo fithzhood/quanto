@@ -212,7 +212,7 @@
     const m = Math.round(t / 60);
     if (m < 60) return m + ' min';
     const h = Math.floor(m / 60), r = m % 60;
-    return h + '\u00a0h' + (r ? ' ' + r + ' min' : '');
+    return h + '\u00a0h ' + r + ' min';   /* i minuti ci sono sempre, anche quando sono zero: \u00ab2 h 0 min\u00bb */
   }
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a, testo) => { const e = document.createElementNS(NS, n); for (const k in a || {}) e.setAttribute(k, a[k]); if (testo != null) e.textContent = testo; return e; };

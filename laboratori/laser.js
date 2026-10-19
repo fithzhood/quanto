@@ -292,7 +292,7 @@
   /* ---------------- numeri ---------------- */
   function num(v, d) { const s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); return s.replace('.', ',').replace('-', '−'); }
   function texNum(v, d) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', '{,}'); }
-  const texN = n => String(n).replace('.', '{,}');   /* gli indici sono numeri esatti: 1, 1,33, 1,5, 2,42 */
+  const texN = n => texNum(n, 2);   /* gli indici di rifrazione, sempre con due decimali: 1,00, 1,33, 1,50, 2,42 */
 
   /* le frasi di Stilla a fine livello (corte: si legge solo la prima frase) */
   const VITTORIE = [
@@ -311,10 +311,10 @@
     ' Il raggio arriva da sinistra, in orizzontale; il sensore è in alto, dalla parte del laser.',
     ' Prima manda il raggio da A a B, poi ruota B verso il sensore.',
     ' θ₁ è l\'angolo del laser con la verticale, cioè con la normale alla superficie dell\'acqua (n = 1,33).',
-    ' φ è l\'inclinazione della lastra di vetro (n = 1,5). Il laser resta fermo, e il sensore è 8\u00a0cm sotto il raggio.',
+    ' φ è l\'inclinazione della lastra di vetro (n = 1,50). Il laser resta fermo, e il sensore è 8\u00a0cm sotto il raggio.',
     ' Il laser è sott\'acqua; θ₁ è il suo angolo con la verticale. Uscendo nell\'aria il raggio si allontana dalla normale.',
     ' Sott\'acqua non c\'è nessuno specchio, ma la superficie, vista da sotto, può rimandare giù tutta la luce.',
-    ' α è l\'inclinazione del laser sull\'asse della fibra. La fibra è di vetro (n = 1,5), fuori c\'è aria.'
+    ' α è l\'inclinazione del laser sull\'asse della fibra. La fibra è di vetro (n = 1,50), fuori c\'è aria.'
   ];
   const AIUTO_LIBERO = 'In modalità libera il laser è sempre acceso e non c\'è niente da colpire. Trascina il laser per alzarlo o abbassarlo, il blocco per spostarlo, lo specchio per ruotarlo; trascinando altrove nella scena punti il laser. Sotto scegli l\'angolo α del laser, la rotazione φ del blocco, il materiale (l\'indice n) e la forma. La formula riguarda il primo punto in cui il raggio passa da un mezzo all\'altro.';
 
@@ -462,7 +462,7 @@
           /* il nome e l'indice: dentro in alto se è grande (la vasca), sotto se è piccolo */
           const xs = bb.map(v => v[0]), ys = bb.map(v => v[1]);
           const x0 = Math.max(0, Math.min.apply(null, xs)), x1 = Math.min(L.vista[0], Math.max.apply(null, xs)), y0 = Math.max(0, Math.min.apply(null, ys)), y1 = Math.max.apply(null, ys);
-          const testo = bl.nome + ', n = ' + String(bl.n).replace('.', ',');
+          const testo = bl.nome + ', n = ' + num(bl.n, 2);
           if (acqua) scritta(gOggetti, PX(x1) - 6, PY(Math.min(y1, L.vista[1])) + fs(1.25), testo, 'font: 600 ' + fs(.95) + 'px var(--font); fill: var(--s1)', { 'text-anchor': 'end' });
           else if (bl.fibra) scritta(gOggetti, PX(x0 + 16), PY(y0) + fs(1.4), testo, 'font: 600 ' + fs(.95) + 'px var(--font); fill: var(--s1)', { 'text-anchor': 'middle' });
           else scritta(gOggetti, PX((x0 + x1) / 2), Math.min(PY(y0) + fs(1.4), PY(0) - 4), testo, 'font: 600 ' + fs(.95) + 'px var(--font); fill: var(--s1)', { 'text-anchor': 'middle' });
@@ -597,7 +597,7 @@
         const out = (k, t) => { box[k].querySelector('output').textContent = t; };
         out('laser', num(p.laser || 0, 0) + '°'); out('s0', (p.s0 || 0) + '°'); out('s1', (p.s1 || 0) + '°');
         out('blocco', num(p.blocco || 0, 0) + '°');
-        if (libero) { out('mat', String(MATERIALI[p.mat].n).replace('.', ',')); out('forma', FORME[p.forma]); box.mat.title = MATERIALI[p.mat].nome; }
+        if (libero) { out('mat', num(MATERIALI[p.mat].n, 2)); out('forma', FORME[p.forma]); box.mat.title = MATERIALI[p.mat].nome; }
         ks.forEach(k => {
           const m = lim(k);
           box[k].querySelectorAll('button').forEach(bt => { const d = +bt.dataset.d; bt.disabled = animando || (!m.giro && (d < 0 ? p[k] <= m.min : p[k] >= m.max)); });
