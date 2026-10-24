@@ -49,7 +49,7 @@
   /* lettura facilitata: testo più grande e più spaziato, senza corsivi (per chi fa fatica a leggere) */
   function applicaLettura() { const si = !!stato.impostazioni.letturaFacile; document.documentElement.classList.toggle('lettura-facile', si); const b = document.getElementById('btn-lettura'); if (b) b.setAttribute('aria-pressed', si); }
   applicaLettura();
-  document.getElementById('btn-lettura').addEventListener('click', () => { stato.impostazioni.letturaFacile = !stato.impostazioni.letturaFacile; salva(); applicaLettura(); if (window.CMASC) CMASC.dici(stato.impostazioni.letturaFacile ? 'Lettura facilitata accesa: testo più grande e più spazio fra le righe. Si spegne con lo stesso pulsante.' : 'Lettura facilitata spenta.', { tipo: 'commento', espressione: 'occhiolino', durata: 3500 }); });
+  document.getElementById('btn-lettura').addEventListener('click', () => { stato.impostazioni.letturaFacile = !stato.impostazioni.letturaFacile; salva(); applicaLettura(); if (window.CMASC) CMASC.espressione('occhiolino', 1500); });
   { const mq = window.matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', applicaTema); else if (mq.addListener) mq.addListener(applicaTema); }   /* Safari < 14 conosce solo addListener */
   document.getElementById('btn-tema').addEventListener('click', (ev) => {
     const scuro = document.documentElement.dataset.tema === 'scuro';
@@ -542,10 +542,6 @@
     }
     app.appendChild(h(`<div class="versione">Quanto v${VERSIONE}</div>`));
     aggiornaBadge();
-    if (stato.impostazioni.mascotte && !sessionStorage.getItem('quanto.salutato')) {
-      sessionStorage.setItem('quanto.salutato', '1');
-      setTimeout(() => { if (paginaCorrente !== 'home') return; CMASC.dici(daRip ? `Bentornato. Hai ${daRip} ${daRip === 1 ? 'carta' : 'carte'} da ripassare: vuoi cominciare da lì?` : 'Ciao, sono Stilla. Scegli un argomento, oppure toccami quando vuoi un consiglio o una storia di fisica.', { tipo: 'commento', espressione: 'felice', azioni: daRip ? [{ testo: 'Vai al ripasso', fn: () => naviga('#/ripasso') }] : [] }); }, 1200);
-    }
   }
 
   /* =====================================================================
@@ -564,10 +560,6 @@
       const p = progresso(id); const prima = !p.visitato;
       p.visitato = Date.now(); p.nEsercizi = arg.esercizi.length; p.nFlashcard = arg.flashcards.length; stato.ultimo = id; salva();
       disegnaArgomento(v, arg, scheda, ancora);
-      if (stato.impostazioni.mascotte && !sessionStorage.getItem('quanto.detto.' + id)) {
-        sessionStorage.setItem('quanto.detto.' + id, '1');
-        setTimeout(() => { if (argCorrente !== id || CMASC.aperta()) return; const s = scegli(arg.suggerimenti); CMASC.dici(md(s.testo), { tipo: s.tipo === 'errore' ? 'errore' : 'suggerimento', html: true, espressione: 'pensa', azioni: [{ testo: 'Un aneddoto', fn: () => raccontaAneddoto(arg) }] }); }, prima ? 2500 : 4000);
-      }
     }).catch(err => {
       svuota();
       app.appendChild(h(`<div class="scheda quiz-avvio"><h2>${esc(v.titolo)}</h2><p>Questo argomento è ancora in preparazione (${esc(err.message)}).</p><a class="btn" href="#/">Torna agli argomenti</a></div>`));
@@ -652,7 +644,7 @@
     schermo.querySelector('.sl-schermo').addEventListener('click', () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); });
     const p = progresso(v.id); p.lab = p.lab || {}; const st = p.lab[meta.id] = p.lab[meta.id] || { livelli: [] };
     const ctx = {
-      zenone: (testo, opz) => { if (stato.impostazioni.mascotte) CMASC.dici(testo, Object.assign({ tipo: 'commento', espressione: 'felice' }, opz || {})); },
+      zenone: (testo, opz) => { if (stato.impostazioni.mascotte) CMASC.dici(testo, Object.assign({ tipo: 'commento', espressione: 'felice' }, opz || {}, { azione: true })); },
       mascotte: (evento, testo) => CMASC.reagisci(evento, testo),
       completato: (livello) => { if (!st.livelli.includes(livello)) st.livelli.push(livello); salva(); CMASC.reagisci('livello'); },
       stato: () => st, tema: () => document.documentElement.dataset.tema || 'chiaro', CGRAF: window.CGRAF,
@@ -663,10 +655,6 @@
       stage.innerHTML = '';
       const sm = lab.monta(stage, ctx);
       smontaLab = typeof sm === 'function' ? sm : null;
-      if (meta.intro && stato.impostazioni.mascotte && !sessionStorage.getItem('quanto.lab.' + meta.id)) {
-        sessionStorage.setItem('quanto.lab.' + meta.id, '1');
-        setTimeout(() => { if (document.body.contains(stage) && !CMASC.aperta()) CMASC.dici(meta.intro, { tipo: 'suggerimento', espressione: 'pensa', durata: 9000 }); }, 1500);
-      }
     }).catch(err => { stage.innerHTML = `<div class="fc-vuoto">Il laboratorio non si è caricato (${esc(err.message)}).</div>`; });
   }
 
@@ -830,13 +818,13 @@
       const b = ev.currentTarget; const attivo = b.classList.toggle('attivo');
       const ora = Date.now();
       ordine = attivo ? mazzo.filter(x => { const c = statoCarta(x.arg.id, x.carta.id); return c.prossima > 0 && c.prossima <= ora; }) : (stato.impostazioni.mescola ? mescola(mazzo) : mazzo.slice());
-      if (!ordine.length) { ordine = mazzo.slice(); b.classList.remove('attivo'); CMASC.dici('Non c\'è niente da ripassare oggi: le carte tornano quando è il momento. Studia pure tutto il mazzo.', { tipo: 'commento', durata: 5000 }); }
+      if (!ordine.length) { ordine = mazzo.slice(); b.classList.remove('attivo'); CMASC.dici('Non c\'è niente da ripassare oggi: le carte tornano quando è il momento. Studia pure tutto il mazzo.', { tipo: 'commento', azione: true, durata: 5000 }); }
       i = 0; mostra();
     });
     valuta.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       const esito = b.dataset.esito, x = ordine[i], { arg, carta: c } = x;
       valutaCarta(arg.id, c.id, esito); CMASC.reagisci({ si: 'giusto', quasi: 'pensa', no: 'ops' }[esito] || 'neutro');
-      if (esito === 'si') { serie++; if (serie === 5) CMASC.dici('Cinque di fila. Me lo salvo in memoria.', { tipo: 'commento', espressione: 'orgoglioso', durata: 3500 }); } else serie = 0;
+      if (esito === 'si') { serie++; if (serie === 5) setTimeout(() => CMASC.espressione('orgoglioso', 1800), 700); } else serie = 0;
       /* la carta valutata esce dalla seduta; quella che non sapevi torna in fondo */
       viste.add(arg.id + '/' + c.id); bilancio[esito]++;
       ordine.splice(i, 1);
@@ -902,7 +890,7 @@
       const lista = stato.carteMie[arg.id] || (stato.carteMie[arg.id] = []);
       lista.push({ id: 'mia-' + Date.now().toString(36), fronte: f.fronte.value.trim(), retro: f.retro.value.trim(), sezione: f.sezione.value, tipo: 'concetto' });
       salva(); f.reset(); ridisegnaGruppi();
-      CMASC.dici('Carta aggiunta al mazzo. La trovi mescolata alle altre alla prossima apertura della scheda.', { tipo: 'commento', espressione: 'felice', durata: 4000, azioni: [{ testo: 'Ricarica adesso', fn: () => disegnaArgomento(v, arg, 'flashcard') }] });
+      CMASC.dici('Carta aggiunta al mazzo. La trovi mescolata alle altre alla prossima apertura della scheda.', { tipo: 'commento', azione: true, espressione: 'felice', durata: 4000, azioni: [{ testo: 'Ricarica adesso', fn: () => disegnaArgomento(v, arg, 'flashcard') }] });
     });
     ridisegnaGruppi();
     det.querySelector('.b-conta').textContent = '';
@@ -967,7 +955,7 @@
       card.querySelector('.fatto-spunta input').addEventListener('change', ev => { segnaFatto(e.id, ev.target.checked); card.classList.toggle('fatto', ev.target.checked); });
       let dati = 0; const sugg = card.querySelector('.es-suggerimenti');
       card.querySelector('.b-sugg').addEventListener('click', () => {
-        if (dati >= e.suggerimenti.length) { CMASC.dici('Suggerimenti finiti: ora tocca a te. Se proprio non va, guarda la soluzione e poi rifallo da capo.', { tipo: 'commento', espressione: 'pensa', durata: 5000 }); return; }
+        if (dati >= e.suggerimenti.length) { CMASC.dici('Suggerimenti finiti: ora tocca a te. Se proprio non va, guarda la soluzione e poi rifallo da capo.', { tipo: 'commento', azione: true, espressione: 'pensa', durata: 5000 }); return; }
         const s = e.suggerimenti[dati]; dati++;
         const r = h('<div class="riquadro nota prosa"></div>'); r.innerHTML = md(s); sugg.appendChild(r);
         CMASC.espressione('pensa');
@@ -1125,9 +1113,8 @@
       esiti.forEach(e => { const x = h(`<div class="voce ${e.ok ? 'ok' : 'no'}"><span class="segno">${e.ok ? '✓' : '✕'}</span><div class="prosa"></div></div>`); x.querySelector('.prosa').innerHTML = md(e.q.domanda) + (e.ok ? '' : '<div class="quiz-spiega">' + md(e.q.spiegazione) + '</div>'); rie.appendChild(x); });
       card.querySelector('.b-rifai').addEventListener('click', () => avviaQuiz(pan, arg, v, n));
       const tab = app.querySelector('.scheda-tab[href$="/quiz"]'); if (tab) { let s = tab.querySelector('.spunta'); if (!s) { s = document.createElement('span'); s.className = 'spunta'; tab.appendChild(document.createTextNode(' ')); tab.appendChild(s); } s.textContent = p.quizMigliore + '/' + p.quizTot; }
-      /* il commento sta già nel riquadro del risultato: Stilla reagisce e, sugli schermi larghi, offre solo una storia */
-      if (innerWidth >= 640) CMASC.dici('Intanto, ti racconto una storia?', { tipo: 'commento', espressione: frazione >= 0.7 ? 'orgoglioso' : 'pensa', durata: 6000, azioni: [{ testo: 'Raccontami un aneddoto', fn: () => raccontaAneddoto(arg) }] });
-      else CMASC.reagisci(frazione >= 0.7 ? 'livello' : 'pensa');
+      /* il commento sta già nel riquadro del risultato: Stilla reagisce solo con la faccia */
+      CMASC.reagisci(frazione >= 0.7 ? 'livello' : 'pensa');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     mostra();
@@ -1160,7 +1147,7 @@
       let mazzo = [];
       argomenti.forEach(arg => { if (!arg) return; selezionate(arg).forEach(c => { const sc = statoCarta(arg.id, c.id); if (!soloDovute || (sc.prossima > 0 && sc.prossima <= Date.now())) mazzo.push({ arg, carta: c }); }); });
       studio.innerHTML = '';
-      if (soloDovute && !mazzo.length) { studio.appendChild(h('<div class="scheda fc-vuoto">Nessuna carta in scadenza oggi. Puoi studiare comunque tutte le selezionate.</div>')); CMASC.dici('Oggi niente da ripassare: le scatole sono in ordine. Torna domani, o studia tutto il mazzo.', { tipo: 'commento', espressione: 'felice', durata: 6000 }); return; }
+      if (soloDovute && !mazzo.length) { studio.appendChild(h('<div class="scheda fc-vuoto">Nessuna carta in scadenza oggi. Puoi studiare comunque tutte le selezionate.</div>')); return; }
       mazzo = mazzo.sort((x, y) => statoCarta(x.arg.id, x.carta.id).prossima - statoCarta(y.arg.id, y.carta.id).prossima);
       const ricontaScadenze = () => griglia.querySelectorAll('label[data-arg]').forEach(l => { const n = Object.values(stato.carte[l.dataset.arg] || {}).filter(c => c.prossima && c.prossima <= Date.now()).length; l.querySelector('small').textContent = n ? n + ' in scadenza' : ''; });
       studioFlashcard(studio, mazzo, { multi: true, vuoto: 'Nessuna carta selezionata negli argomenti scelti.', dopoValuta: ricontaScadenze });
@@ -1384,7 +1371,7 @@
     });
     sez.querySelector('.s-imp').addEventListener('change', e => {
       const f = e.target.files[0]; if (!f) return;
-      f.text().then(t => { const d = JSON.parse(t); if (!d || typeof d !== 'object' || !d.progressi) throw new Error('formato'); stato = Object.assign(statoBase(), d); salva(); riapplicaStato(); route(); CMASC.dici('Progressi importati.', { tipo: 'commento', espressione: 'felice', durata: 3000 }); }).catch(() => alert('File non valido.'));
+      f.text().then(t => { const d = JSON.parse(t); if (!d || typeof d !== 'object' || !d.progressi) throw new Error('formato'); stato = Object.assign(statoBase(), d); salva(); riapplicaStato(); route(); CMASC.dici('Progressi importati.', { tipo: 'commento', azione: true, espressione: 'felice', durata: 3000 }); }).catch(() => alert('File non valido.'));
     });
     sez.querySelector('.s-azz').addEventListener('click', () => { if (confirm('Cancellare davvero tutti i progressi?')) { stato = statoBase(); salva(); riapplicaStato(); route(); } });
   }
@@ -1410,7 +1397,7 @@
     } else {
       CMASC.dici(scegli(CONSIGLI), { tipo: 'suggerimento', chiesto: true, espressione: 'pensa', azioni: [
         { testo: 'Un altro', fn: () => { CMASC.chiudi(); menuMascotte(); } },
-        { testo: 'Una storia a caso', fn: () => { const v = scegli(IND.argomenti); caricaArgomento(v.id).then(raccontaAneddoto).catch(() => CMASC.dici('Quella storia non è ancora pronta. Riprova.', { tipo: 'commento', durata: 3000 })); } }
+        { testo: 'Una storia a caso', fn: () => { const v = scegli(IND.argomenti); caricaArgomento(v.id).then(raccontaAneddoto).catch(() => CMASC.dici('Quella storia non è ancora pronta. Riprova.', { tipo: 'commento', azione: true, durata: 3000 })); } }
       ] });
     }
   }

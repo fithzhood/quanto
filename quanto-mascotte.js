@@ -177,7 +177,11 @@
      Un testo lungo si spezza in più fumetti brevi, sfogliabili (‹ 2/4 ›), invece di un blocco unico.
      Quando Stilla parla da sola (spontaneo, il caso normale) il fumetto è compatto, mostra solo il primo
      pezzo e si chiude da solo; se c'era altro, compare «Dimmi di più». Quando è lo studente a
-     chiedere (opz.chiesto) i pezzi sono un po' più lunghi e il fumetto resta finché non lo chiude. */
+     chiedere (opz.chiesto) i pezzi sono un po' più lunghi e il fumetto resta finché non lo chiude.
+     REGOLA: Stilla non parla mai da sola. Un fumetto si apre solo se lo studente lo chiede
+     (opz.chiesto: tocco sulla mascotte, «Dimmi di più», un pulsante di aiuto) o se risponde a una sua
+     azione (opz.azione: fine livello o errore in un laboratorio, conferma di un comando appena dato).
+     Una chiamata senza nessuno dei due è spontanea: niente fumetto, cambia solo la faccia. */
   const LIM_SPONTANEO = 120, LIM_CHIESTO = 230;
   const lunghezza = h => h.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').length;
   function spezza(html, lim) {
@@ -203,10 +207,12 @@
   }
   const escapa = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  /* dici(testo, {tipo:'suggerimento'|'aneddoto'|'commento'|'errore', titolo, html, chiesto, azioni:[{testo, fn}], durata, espressione}) */
+  /* dici(testo, {tipo:'suggerimento'|'aneddoto'|'commento'|'errore', titolo, html, chiesto, azione, azioni:[{testo, fn}], durata, espressione}) */
   function dici(testo, opz) {
     opz = opz || {};
     if (!radice) return;
+    const modo = opz.chiesto ? 'chiesto' : opz.azione ? 'azione' : 'spontaneo';
+    if (modo === 'spontaneo') { if (!aperta() && !dorme) espressione(opz.espressione || 'neutro', 2200); return; }
     clearTimeout(timerChiusura);
     if (dorme) sveglia();
     const html = opz.html ? String(testo) : escapa(testo);
@@ -244,18 +250,15 @@
     else if (opz.durata) timerChiusura = setTimeout(chiudiBolla, opz.durata);
   }
 
-  /* reagisci(evento, testo?): la faccia cambia secondo quello che è successo; la bolla solo se serve */
-  const FRASI = {
-    /* frasi che valgono qualunque sia l'errore (niente «ci sei vicino»: non lo sappiamo) */
-    'sbagliato-ancora': ['Due tentativi: prova a chiedere un suggerimento.', 'Un suggerimento può sbloccarti, senza svelarti la risposta.', 'Rileggi il testo con calma: a volte il dettaglio è lì.']
-  };
+  /* reagisci(evento, testo?): la faccia cambia secondo quello che è successo. Mai un fumetto: le reazioni
+     alle risposte sono solo espressione e animazione (il testo, se arriva, si ignora). */
   function reagisci(evento, testo) {
     if (!pronta || (radice && radice.hidden)) return;
     if (dorme) sveglia();
     switch (evento) {
       case 'giusto': espressione(Math.random() < 0.25 ? 'occhiolino' : 'felice', 1800); break;
       case 'sbagliato': espressione('sorpreso'); setTimeout(() => { if (faccia === 'sorpreso') espressione('pensa', 2200); }, 650); break;
-      case 'sbagliato-ancora': espressione('confuso', 2600); if (!aperta()) dici(FRASI['sbagliato-ancora'][Math.floor(Math.random() * 3)], { tipo: 'commento', espressione: 'confuso', durata: 4000 }); break;
+      case 'sbagliato-ancora': espressione('confuso', 2600); break;
       case 'passo': espressione('pensa', 1100); break;
       case 'livello': espressione('festa', 2400); break;
       case 'traguardo': {
@@ -263,7 +266,7 @@
         clearTimeout(timerStato);
         diventa('nuvola'); const t = ora(); pioggia = [t + 1.4, t + 4.2];
         timerStato = setTimeout(() => { diventa('liquida'); espressione('festa', 1800); }, 4600);
-        if (testo) dici(testo, { tipo: 'commento', espressione: 'festa', durata: 6000 }); else espressione('festa', 4400);
+        espressione('festa', 4400);
         break;
       }
       case 'ops': espressione('ops', 1600); break;
